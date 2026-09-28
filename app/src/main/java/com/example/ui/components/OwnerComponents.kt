@@ -22,6 +22,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -31,6 +32,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.example.R
 import com.example.ui.theme.*
 
@@ -782,6 +784,72 @@ fun OwnerNavigationDrawerSheet(
                     fontWeight = FontWeight.SemiBold,
                     color = StatusExpiredRed
                 )
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// 7. HIGH-CONTRAST OPAQUE MODAL CONTAINER & DIALOG
+// Eliminates translucent "mirror banner" effect and background bleed-through.
+// ---------------------------------------------------------------------------
+val OwnerModalSurface = Color(0xFF13161A) // 100% Solid Deep Charcoal Surface
+val OwnerModalSurfaceElevated = Color(0xFF1B2026) // Solid elevated surface for inner cards/sections
+
+@Composable
+fun OwnerModalCard(
+    modifier: Modifier = Modifier,
+    shape: androidx.compose.ui.graphics.Shape = RoundedCornerShape(24.dp),
+    content: @Composable () -> Unit
+) {
+    Box(
+        modifier = modifier
+            .shadow(
+                elevation = 28.dp,
+                shape = shape,
+                ambientColor = Color.Black,
+                spotColor = Color.Black
+            )
+            .clip(shape)
+            .background(OwnerModalSurface)
+            .border(
+                width = 1.dp,
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        Color(0x40FFFFFF),
+                        Color(0x18FFFFFF),
+                        Color(0x0CFFFFFF)
+                    )
+                ),
+                shape = shape
+            )
+    ) {
+        content()
+    }
+}
+
+@Composable
+fun OwnerModalDialog(
+    onDismissRequest: () -> Unit,
+    properties: DialogProperties = DialogProperties(usePlatformDefaultWidth = false),
+    content: @Composable () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismissRequest,
+        properties = properties
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 24.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            OwnerModalCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight()
+            ) {
+                content()
             }
         }
     }

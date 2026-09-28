@@ -401,84 +401,82 @@ private fun RecordPaymentConfirmDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    Dialog(onDismissRequest = onDismiss) {
-        LiquidGlassCard(
-            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-            shape = RoundedCornerShape(22.dp)
+    OwnerModalDialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Column(
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "Record Payment", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = "Confirm manual payment collection for this member:",
+                fontSize = 12.sp,
+                color = ByceCoolGray
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp)
-                    .verticalScroll(rememberScrollState())
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(OwnerModalSurfaceElevated)
+                    .border(1.dp, Color(0x1AFFFFFF), RoundedCornerShape(14.dp))
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                Column(modifier = Modifier.fillMaxWidth().padding(14.dp)) {
+                    ReceiptRow("Member", item.customerName)
+                    ReceiptRow("Phone", item.phoneNumber)
+                    ReceiptRow("Plan", item.membershipPlan)
+                    ReceiptRow("Amount", "₹${item.amount.toInt()}")
+                    ReceiptRow("Status", item.dueDate)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color(0x20FFFFFF))
+                        .clickable { onDismiss() }
+                        .padding(vertical = 12.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(text = "Record Payment", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
-                    }
+                    Text(text = "Cancel", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextWhite)
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = "Confirm manual payment collection for this member:",
-                    fontSize = 12.sp,
-                    color = ByceCoolGray
-                )
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                LiquidGlassCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp)
-                ) {
-                    Column(modifier = Modifier.fillMaxWidth().padding(14.dp)) {
-                        ReceiptRow("Member", item.customerName)
-                        ReceiptRow("Phone", item.phoneNumber)
-                        ReceiptRow("Plan", item.membershipPlan)
-                        ReceiptRow("Amount", "₹${item.amount.toInt()}")
-                        ReceiptRow("Status", item.dueDate)
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(18.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(Color(0x20FFFFFF))
-                            .clickable { onDismiss() }
-                            .padding(vertical = 12.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = "Cancel", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextWhite)
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(
-                                Brush.horizontalGradient(
-                                    colors = listOf(Color(0xFF6B9330), Color(0xFF4E7320))
-                                )
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(
+                            Brush.horizontalGradient(
+                                colors = listOf(Color(0xFF6B9330), Color(0xFF4E7320))
                             )
-                            .clickable { onConfirm() }
-                            .padding(vertical = 12.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = "Mark Paid", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                    }
+                        )
+                        .clickable { onConfirm() }
+                        .padding(vertical = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "Mark Paid", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextWhite)
                 }
             }
         }
@@ -592,78 +590,73 @@ private fun PaymentDetailModal(
     payment: PaymentItem,
     onDismiss: () -> Unit
 ) {
-    Dialog(onDismissRequest = onDismiss) {
-        LiquidGlassCard(
-            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-            shape = RoundedCornerShape(24.dp)
+    OwnerModalDialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Column(
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "Payment Receipt", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Text(
+                text = "₹${payment.amount.toInt()}",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = TextWhite
+            )
+            Text(text = "Transaction ${payment.transactionId}", fontSize = 12.sp, color = ByceCoolGray)
+
+            Spacer(modifier = Modifier.height(14.dp))
+            Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0x20FFFFFF)))
+            Spacer(modifier = Modifier.height(12.dp))
+
+            ReceiptRow("Customer", payment.customerName)
+            ReceiptRow("Plan", payment.planName)
+            ReceiptRow("Provider", payment.provider)
+            ReceiptRow("Order ID", payment.orderId)
+            ReceiptRow("Payment ID", payment.paymentId)
+            ReceiptRow("Date", payment.date)
+            ReceiptRow("Paid At", payment.paidAt)
+
+            Spacer(modifier = Modifier.height(6.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "Status", fontSize = 13.sp, color = TextMuted)
+                OwnerStatusBadge(status = payment.status)
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(text = "Payment Receipt", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                Text(
-                    text = "₹${payment.amount.toInt()}",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = TextWhite
-                )
-                Text(text = "Transaction ${payment.transactionId}", fontSize = 12.sp, color = ByceCoolGray)
-
-                Spacer(modifier = Modifier.height(14.dp))
-                Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0x20FFFFFF)))
-                Spacer(modifier = Modifier.height(12.dp))
-
-                ReceiptRow("Customer", payment.customerName)
-                ReceiptRow("Plan", payment.planName)
-                ReceiptRow("Provider", payment.provider)
-                ReceiptRow("Order ID", payment.orderId)
-                ReceiptRow("Payment ID", payment.paymentId)
-                ReceiptRow("Date", payment.date)
-                ReceiptRow("Paid At", payment.paidAt)
-
-                Spacer(modifier = Modifier.height(6.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(text = "Status", fontSize = 13.sp, color = TextMuted)
-                    OwnerStatusBadge(status = payment.status)
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(Color(0x35FFFFFF), Color(0x20FFFFFF))
-                            )
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(Color(0x35FFFFFF), Color(0x20FFFFFF))
                         )
-                        .border(1.dp, GlassBorderSpecular, RoundedCornerShape(16.dp))
-                        .clickable { onDismiss() }
-                        .padding(vertical = 12.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "Close Receipt", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                }
+                    )
+                    .border(1.dp, GlassBorderSpecular, RoundedCornerShape(16.dp))
+                    .clickable { onDismiss() }
+                    .padding(vertical = 12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "Close Receipt", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextWhite)
             }
         }
     }

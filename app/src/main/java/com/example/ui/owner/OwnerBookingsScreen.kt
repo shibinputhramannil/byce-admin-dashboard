@@ -377,106 +377,101 @@ private fun BookingDetailModal(
     onCancelBooking: () -> Unit,
     onMarkArrived: () -> Unit = {}
 ) {
-    Dialog(onDismissRequest = onDismiss) {
-        LiquidGlassCard(
-            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-            shape = RoundedCornerShape(24.dp)
+    OwnerModalDialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp)
-                    .verticalScroll(rememberScrollState())
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(text = "Booking Details", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
-                    }
+                Text(text = "Booking Details", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
                 }
+            }
 
-                Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
-                Text(text = booking.customerName, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                Text(text = "Plan: ${booking.membershipPlan}", fontSize = 12.sp, color = ByceCoolGray)
+            Text(text = booking.customerName, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+            Text(text = "Plan: ${booking.membershipPlan}", fontSize = 12.sp, color = ByceCoolGray)
 
-                Spacer(modifier = Modifier.height(14.dp))
-                Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0x20FFFFFF)))
-                Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(14.dp))
+            Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0x20FFFFFF)))
+            Spacer(modifier = Modifier.height(12.dp))
 
-                BookingDetailRow("Booking ID", booking.id)
-                BookingDetailRow("Scheduled Date", booking.date)
-                BookingDetailRow("Slot Window", booking.time)
-                BookingDetailRow("Gym Location", "Iron House Fitness, Kozhikode")
-                BookingDetailRow("Arrival Status", booking.arrivalStatus)
+            BookingDetailRow("Booking ID", booking.id)
+            BookingDetailRow("Scheduled Date", booking.date)
+            BookingDetailRow("Slot Window", booking.time)
+            BookingDetailRow("Gym Location", "Iron House Fitness, Kozhikode")
+            BookingDetailRow("Arrival Status", booking.arrivalStatus)
 
-                Spacer(modifier = Modifier.height(6.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(text = "Status", fontSize = 13.sp, color = TextMuted)
-                    OwnerStatusBadge(status = booking.status)
-                }
+            Spacer(modifier = Modifier.height(6.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "Status", fontSize = 13.sp, color = TextMuted)
+                OwnerStatusBadge(status = booking.status)
+            }
 
-                Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-                if (booking.arrivalStatus != "Checked In" && booking.status != "Cancelled") {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(
-                                Brush.horizontalGradient(
-                                    colors = listOf(StatusActiveGreen.copy(alpha = 0.35f), StatusActiveGreen.copy(alpha = 0.15f))
-                                )
-                            )
-                            .border(1.dp, StatusActiveGreen.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
-                            .clickable { onMarkArrived() }
-                            .padding(vertical = 12.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = "✓ Mark Arrived & Check In", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = StatusActiveGreen)
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-
-                if (booking.status == "Upcoming") {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(StatusExpiredRedBg)
-                            .border(1.dp, StatusExpiredRed.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
-                            .clickable { onCancelBooking() }
-                            .padding(vertical = 12.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = "Cancel Booking", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = StatusExpiredRed)
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-
+            if (booking.arrivalStatus != "Checked In" && booking.status != "Cancelled") {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(16.dp))
                         .background(
-                            Brush.verticalGradient(
-                                colors = listOf(Color(0xFF6B9330), Color(0xFF4E7320))
+                            Brush.horizontalGradient(
+                                colors = listOf(StatusActiveGreen.copy(alpha = 0.35f), StatusActiveGreen.copy(alpha = 0.15f))
                             )
                         )
-                        .clickable { onDismiss() }
+                        .border(1.dp, StatusActiveGreen.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+                        .clickable { onMarkArrived() }
                         .padding(vertical = 12.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = "Close", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+                    Text(text = "✓ Mark Arrived & Check In", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = StatusActiveGreen)
                 }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            if (booking.status == "Upcoming") {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(StatusExpiredRedBg)
+                        .border(1.dp, StatusExpiredRed.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+                        .clickable { onCancelBooking() }
+                        .padding(vertical = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "Cancel Booking", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = StatusExpiredRed)
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(Color(0xFF6B9330), Color(0xFF4E7320))
+                        )
+                    )
+                    .clickable { onDismiss() }
+                    .padding(vertical = 12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "Close", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextWhite)
             }
         }
     }

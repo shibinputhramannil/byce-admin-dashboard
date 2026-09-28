@@ -732,17 +732,13 @@ private fun ChangeOperatingStatusDialog(
 ) {
     var selected by remember { mutableStateOf(currentStatus) }
 
-    Dialog(onDismissRequest = onDismiss) {
-        LiquidGlassCard(
-            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-            shape = RoundedCornerShape(22.dp)
+    OwnerModalDialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp)
-                    .verticalScroll(rememberScrollState())
-            ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -796,7 +792,6 @@ private fun ChangeOperatingStatusDialog(
                 }
             }
         }
-    }
 }
 
 @Composable
@@ -804,55 +799,50 @@ private fun RegenerateQrConfirmDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
 ) {
-    Dialog(onDismissRequest = onDismiss) {
-        LiquidGlassCard(
-            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-            shape = RoundedCornerShape(22.dp)
+    OwnerModalDialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp)
-                    .verticalScroll(rememberScrollState())
+            Text(text = "Regenerate QR Code?", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(
+                text = "Regenerating the QR code will invalidate any previously printed front-desk standees or cached QR tokens. Customers will need to scan the new code to check in.",
+                fontSize = 12.sp,
+                color = ByceCoolGray,
+                lineHeight = 17.sp
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                Text(text = "Regenerate QR Code?", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                Spacer(modifier = Modifier.height(10.dp))
-                Text(
-                    text = "Regenerating the QR code will invalidate any previously printed front-desk standees or cached QR tokens. Customers will need to scan the new code to check in.",
-                    fontSize = 12.sp,
-                    color = ByceCoolGray,
-                    lineHeight = 17.sp
-                )
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color(0x20FFFFFF))
+                        .clickable { onDismiss() }
+                        .padding(vertical = 12.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(Color(0x20FFFFFF))
-                            .clickable { onDismiss() }
-                            .padding(vertical = 12.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = "Cancel", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextWhite)
-                    }
+                    Text(text = "Cancel", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextWhite)
+                }
 
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(StatusExpiredRedBg)
-                            .border(1.dp, StatusExpiredRed.copy(alpha = 0.5f), RoundedCornerShape(14.dp))
-                            .clickable { onConfirm() }
-                            .padding(vertical = 12.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = "Regenerate", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = StatusExpiredRed)
-                    }
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(StatusExpiredRedBg)
+                        .border(1.dp, StatusExpiredRed.copy(alpha = 0.5f), RoundedCornerShape(14.dp))
+                        .clickable { onConfirm() }
+                        .padding(vertical = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "Regenerate", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = StatusExpiredRed)
                 }
             }
         }
@@ -889,88 +879,83 @@ private fun EditGymDialog(
     var openTime by remember { mutableStateOf(current.openingTime) }
     var closeTime by remember { mutableStateOf(current.closingTime) }
 
-    Dialog(onDismissRequest = onDismiss) {
-        LiquidGlassCard(
-            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-            shape = RoundedCornerShape(24.dp)
+    OwnerModalDialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+                .verticalScroll(androidx.compose.foundation.rememberScrollState())
         ) {
-            Column(
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "Edit Gym Information", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            LiquidGlassTextField(value = name, onValueChange = { name = it }, label = "Gym Name")
+            Spacer(modifier = Modifier.height(8.dp))
+            LiquidGlassTextField(value = description, onValueChange = { description = it }, label = "Description")
+            Spacer(modifier = Modifier.height(8.dp))
+            LiquidGlassTextField(value = phone, onValueChange = { phone = it }, label = "Phone")
+            Spacer(modifier = Modifier.height(8.dp))
+            LiquidGlassTextField(value = email, onValueChange = { email = it }, label = "Email")
+            Spacer(modifier = Modifier.height(8.dp))
+            LiquidGlassTextField(value = website, onValueChange = { website = it }, label = "Website")
+            Spacer(modifier = Modifier.height(8.dp))
+            LiquidGlassTextField(value = address, onValueChange = { address = it }, label = "Address")
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                LiquidGlassTextField(value = city, onValueChange = { city = it }, label = "City", modifier = Modifier.weight(1f))
+                LiquidGlassTextField(value = pincode, onValueChange = { pincode = it }, label = "Pincode", modifier = Modifier.weight(1f))
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                LiquidGlassTextField(value = openTime, onValueChange = { openTime = it }, label = "Opening Time", modifier = Modifier.weight(1f))
+                LiquidGlassTextField(value = closeTime, onValueChange = { closeTime = it }, label = "Closing Time", modifier = Modifier.weight(1f))
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp)
-                    .verticalScroll(androidx.compose.foundation.rememberScrollState())
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(text = "Edit Gym Information", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                LiquidGlassTextField(value = name, onValueChange = { name = it }, label = "Gym Name")
-                Spacer(modifier = Modifier.height(8.dp))
-                LiquidGlassTextField(value = description, onValueChange = { description = it }, label = "Description")
-                Spacer(modifier = Modifier.height(8.dp))
-                LiquidGlassTextField(value = phone, onValueChange = { phone = it }, label = "Phone")
-                Spacer(modifier = Modifier.height(8.dp))
-                LiquidGlassTextField(value = email, onValueChange = { email = it }, label = "Email")
-                Spacer(modifier = Modifier.height(8.dp))
-                LiquidGlassTextField(value = website, onValueChange = { website = it }, label = "Website")
-                Spacer(modifier = Modifier.height(8.dp))
-                LiquidGlassTextField(value = address, onValueChange = { address = it }, label = "Address")
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    LiquidGlassTextField(value = city, onValueChange = { city = it }, label = "City", modifier = Modifier.weight(1f))
-                    LiquidGlassTextField(value = pincode, onValueChange = { pincode = it }, label = "Pincode", modifier = Modifier.weight(1f))
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    LiquidGlassTextField(value = openTime, onValueChange = { openTime = it }, label = "Opening Time", modifier = Modifier.weight(1f))
-                    LiquidGlassTextField(value = closeTime, onValueChange = { closeTime = it }, label = "Closing Time", modifier = Modifier.weight(1f))
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(Color(0xFF6B9330), Color(0xFF4E7320))
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(Color(0xFF6B9330), Color(0xFF4E7320))
+                        )
+                    )
+                    .clickable {
+                        onSave(
+                            current.copy(
+                                name = name,
+                                description = description,
+                                phone = phone,
+                                email = email,
+                                website = website,
+                                address = address,
+                                city = city,
+                                state = state,
+                                pincode = pincode,
+                                openingTime = openTime,
+                                closingTime = closeTime
                             )
                         )
-                        .clickable {
-                            onSave(
-                                current.copy(
-                                    name = name,
-                                    description = description,
-                                    phone = phone,
-                                    email = email,
-                                    website = website,
-                                    address = address,
-                                    city = city,
-                                    state = state,
-                                    pincode = pincode,
-                                    openingTime = openTime,
-                                    closingTime = closeTime
-                                )
-                            )
-                        }
-                        .padding(vertical = 12.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "Save Changes", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                }
+                    }
+                    .padding(vertical = 12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "Save Changes", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextWhite)
             }
         }
     }

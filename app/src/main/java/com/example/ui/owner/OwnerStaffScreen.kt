@@ -7,8 +7,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -241,91 +243,89 @@ private fun AddStaffDialog(
     var phone by remember { mutableStateOf("") }
     var role by remember { mutableStateOf("Staff") } // "Gym Admin" or "Staff"
 
-    Dialog(onDismissRequest = onDismiss) {
-        LiquidGlassCard(
-            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-            shape = RoundedCornerShape(24.dp)
+    OwnerModalDialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(20.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(text = "Add Staff Member", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
-                    }
+                Text(text = "Add Staff Member", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
                 }
+            }
 
-                Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-                LiquidGlassTextField(value = name, onValueChange = { name = it }, label = "Full Name", placeholder = "e.g. Ramesh Nair")
-                Spacer(modifier = Modifier.height(8.dp))
-                LiquidGlassTextField(value = email, onValueChange = { email = it }, label = "Email", placeholder = "ramesh@ironhousefitness.com")
-                Spacer(modifier = Modifier.height(8.dp))
-                LiquidGlassTextField(value = phone, onValueChange = { phone = it }, label = "Phone", placeholder = "+91 98470 55667")
-                Spacer(modifier = Modifier.height(12.dp))
+            LiquidGlassTextField(value = name, onValueChange = { name = it }, label = "Full Name", placeholder = "e.g. Ramesh Nair")
+            Spacer(modifier = Modifier.height(8.dp))
+            LiquidGlassTextField(value = email, onValueChange = { email = it }, label = "Email", placeholder = "ramesh@ironhousefitness.com")
+            Spacer(modifier = Modifier.height(8.dp))
+            LiquidGlassTextField(value = phone, onValueChange = { phone = it }, label = "Phone", placeholder = "+91 98470 55667")
+            Spacer(modifier = Modifier.height(12.dp))
 
-                Text(text = "Assign Role", fontSize = 12.sp, fontWeight = FontWeight.Medium, color = TextMuted)
-                Spacer(modifier = Modifier.height(6.dp))
+            Text(text = "Assign Role", fontSize = 12.sp, fontWeight = FontWeight.Medium, color = TextMuted)
+            Spacer(modifier = Modifier.height(6.dp))
 
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    listOf("Staff", "Gym Admin").forEach { r ->
-                        val isSelected = role == r
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(if (isSelected) Color(0x35FFFFFF) else Color(0x18FFFFFF))
-                                .border(1.dp, if (isSelected) GlassBorderSpecular else Color.Transparent, RoundedCornerShape(12.dp))
-                                .clickable { role = r }
-                                .padding(vertical = 10.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = r,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = TextWhite
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(Color(0xFF6B9330), Color(0xFF4E7320))
-                            )
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                listOf("Staff", "Gym Admin").forEach { r ->
+                    val isSelected = role == r
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (isSelected) Color(0x35FFFFFF) else Color(0x18FFFFFF))
+                            .border(1.dp, if (isSelected) GlassBorderSpecular else Color.Transparent, RoundedCornerShape(12.dp))
+                            .clickable { role = r }
+                            .padding(vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = r,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextWhite
                         )
-                        .clickable {
-                            if (name.isNotBlank()) {
-                                onAdd(
-                                    StaffMember(
-                                        id = "st_${System.currentTimeMillis()}",
-                                        name = name,
-                                        email = email.ifBlank { "staff@ironhousefitness.com" },
-                                        phone = phone.ifBlank { "+91 98470 00000" },
-                                        role = role,
-                                        status = "Active",
-                                        createdDate = "24 Sep 2026"
-                                    )
-                                )
-                            }
-                        }
-                        .padding(vertical = 12.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "Add Member", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+                    }
                 }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(Color(0xFF6B9330), Color(0xFF4E7320))
+                        )
+                    )
+                    .clickable {
+                        if (name.isNotBlank()) {
+                            onAdd(
+                                StaffMember(
+                                    id = "st_${System.currentTimeMillis()}",
+                                    name = name,
+                                    email = email.ifBlank { "staff@ironhousefitness.com" },
+                                    phone = phone.ifBlank { "+91 98470 00000" },
+                                    role = role,
+                                    status = "Active",
+                                    createdDate = "24 Sep 2026"
+                                )
+                            )
+                        }
+                    }
+                    .padding(vertical = 12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "Add Member", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextWhite)
             }
         }
     }

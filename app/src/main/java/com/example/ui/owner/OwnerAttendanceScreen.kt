@@ -505,122 +505,120 @@ private fun TodayCheckinsModal(
         it.customerName.contains(query, ignoreCase = true) || it.membershipPlan.contains(query, ignoreCase = true)
     }
 
-    Dialog(onDismissRequest = onDismiss) {
-        LiquidGlassCard(
-            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-            shape = RoundedCornerShape(24.dp)
+    OwnerModalDialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp)
-                    .verticalScroll(rememberScrollState())
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(text = "Today's Check-ins", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                        Text(text = "${checkins.size} Total Visitors Today", fontSize = 11.sp, color = ByceCoolGray)
-                    }
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
-                    }
+                Column {
+                    Text(text = "Today's Check-ins", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+                    Text(text = "${checkins.size} Total Visitors Today", fontSize = 11.sp, color = ByceCoolGray)
                 }
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
+                }
+            }
 
-                Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-                Text(
-                    text = "Each member has their own verified digital QR pass. Tap the QR button on any member to inspect their digital pass.",
-                    fontSize = 11.sp,
-                    color = TextSubtle,
-                    lineHeight = 16.sp
-                )
+            Text(
+                text = "Each member has their own verified digital QR pass. Tap the QR button on any member to inspect their digital pass.",
+                fontSize = 11.sp,
+                color = TextSubtle,
+                lineHeight = 16.sp
+            )
 
-                Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
-                LiquidGlassTextField(
-                    value = query,
-                    onValueChange = { query = it },
-                    label = "Filter Today's Check-ins",
-                    placeholder = "Search member name..."
-                )
+            LiquidGlassTextField(
+                value = query,
+                onValueChange = { query = it },
+                label = "Filter Today's Check-ins",
+                placeholder = "Search member name..."
+            )
 
-                Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
-                filtered.forEach { item ->
-                    LiquidGlassCard(
+            filtered.forEach { item ->
+                LiquidGlassCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    backgroundColor = OwnerModalSurfaceElevated,
+                    borderWidth = 1.dp,
+                    borderColor = Color(0x25FFFFFF)
+                ) {
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        shape = RoundedCornerShape(14.dp)
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
+                            modifier = Modifier.weight(1f),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(
-                                modifier = Modifier.weight(1f),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(36.dp)
-                                        .clip(CircleShape)
-                                        .background(Color(0x25FFFFFF)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(text = item.customerName.take(2).uppercase(), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                                }
-                                Spacer(modifier = Modifier.width(10.dp))
-                                Column {
-                                    Text(text = item.customerName, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                                    Text(text = "${item.membershipPlan} · In: ${item.checkInTime}", fontSize = 11.sp, color = ByceCoolGray)
-                                }
-                            }
-
-                            // Distinct QR Pass Button
                             Box(
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .background(
-                                        Brush.horizontalGradient(
-                                            colors = listOf(Color(0x3534D399), Color(0x2034D399))
-                                        )
-                                    )
-                                    .border(1.dp, StatusActiveGreen.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
-                                    .clickable { onSelectMemberQr(item) }
-                                    .padding(horizontal = 10.dp, vertical = 6.dp)
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0x25FFFFFF)),
+                                contentAlignment = Alignment.Center
                             ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Icon(Icons.Default.QrCode2, contentDescription = "View QR", tint = StatusActiveGreen, modifier = Modifier.size(14.dp))
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(text = "View QR", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = StatusActiveGreen)
-                                }
+                                Text(text = item.customerName.take(2).uppercase(), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Column {
+                                Text(text = item.customerName, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+                                Text(text = "${item.membershipPlan} · In: ${item.checkInTime}", fontSize = 11.sp, color = ByceCoolGray)
+                            }
+                        }
+
+                        // Distinct QR Pass Button
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(
+                                    Brush.horizontalGradient(
+                                        colors = listOf(Color(0x3534D399), Color(0x2034D399))
+                                    )
+                                )
+                                .border(1.dp, StatusActiveGreen.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
+                                .clickable { onSelectMemberQr(item) }
+                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.QrCode2, contentDescription = "View QR", tint = StatusActiveGreen, modifier = Modifier.size(14.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(text = "View QR", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = StatusActiveGreen)
                             }
                         }
                     }
                 }
+            }
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0x25FFFFFF))
-                        .border(1.dp, GlassBorderSpecular, RoundedCornerShape(14.dp))
-                        .clickable { onDismiss() }
-                        .padding(vertical = 11.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "Close", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color(0x25FFFFFF))
+                    .border(1.dp, GlassBorderSpecular, RoundedCornerShape(14.dp))
+                    .clickable { onDismiss() }
+                    .padding(vertical = 11.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "Close", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextWhite)
             }
         }
     }
@@ -634,123 +632,121 @@ private fun MemberPersonalQrModal(
     member: AttendanceItem,
     onDismiss: () -> Unit
 ) {
-    Dialog(onDismissRequest = onDismiss) {
-        LiquidGlassCard(
-            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-            shape = RoundedCornerShape(24.dp)
+    OwnerModalDialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+                .verticalScroll(rememberScrollState()),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "Member Digital Pass", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(StatusActiveGreenBg)
+                    .padding(horizontal = 8.dp, vertical = 3.dp)
+            ) {
+                Text(text = "✓ AUTHENTICATED ACCESS PASS", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = StatusActiveGreen)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // High-resolution Personal QR Code Display
+            Box(
+                modifier = Modifier
+                    .size(200.dp)
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(Color.White)
+                    .padding(14.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.QrCode2,
+                        contentDescription = "Personal QR",
+                        tint = DarkNavy,
+                        modifier = Modifier.size(140.dp)
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = member.customerName,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = DarkNavy
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Text(
+                text = "Payload: BYCE:MEMBER:${member.customerId}:${member.customerName.replace(" ", "")}:2026",
+                fontSize = 9.sp,
+                color = TextMuted
+            )
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Pass Metadata
+            LiquidGlassCard(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+                backgroundColor = OwnerModalSurfaceElevated,
+                borderWidth = 1.dp,
+                borderColor = Color(0x25FFFFFF)
+            ) {
+                Column(modifier = Modifier.fillMaxWidth().padding(14.dp)) {
+                    DetailLine("Member Name", member.customerName)
+                    DetailLine("Member ID", member.customerId)
+                    DetailLine("Membership Plan", member.membershipPlan)
+                    DetailLine("Check-in Time", member.checkInTime)
+                    DetailLine("Gate Turnstile", "Scanner Terminal 01 (Front Desk)")
+                    DetailLine("Access Tier", "Full Gym + Cardio Zone")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text(
+                text = "Members present this unique digital QR code on their BYCE app at the gym entrance scanner to record check-in and unlock turnstiles.",
+                fontSize = 11.sp,
+                color = ByceCoolGray,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                lineHeight = 15.sp
+            )
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp)
-                    .verticalScroll(rememberScrollState()),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(Color(0xFF6B9330), Color(0xFF4E7320))
+                        )
+                    )
+                    .clickable { onDismiss() }
+                    .padding(vertical = 12.dp),
+                contentAlignment = Alignment.Center
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(text = "Member Digital Pass", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(6.dp))
-
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(StatusActiveGreenBg)
-                        .padding(horizontal = 8.dp, vertical = 3.dp)
-                ) {
-                    Text(text = "✓ AUTHENTICATED ACCESS PASS", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = StatusActiveGreen)
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // High-resolution Personal QR Code Display
-                Box(
-                    modifier = Modifier
-                        .size(200.dp)
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(Color.White)
-                        .padding(14.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.QrCode2,
-                            contentDescription = "Personal QR",
-                            tint = DarkNavy,
-                            modifier = Modifier.size(140.dp)
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = member.customerName,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = DarkNavy
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                Text(
-                    text = "Payload: BYCE:MEMBER:${member.customerId}:${member.customerName.replace(" ", "")}:2026",
-                    fontSize = 9.sp,
-                    color = TextMuted
-                )
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                // Pass Metadata
-                LiquidGlassCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp)
-                ) {
-                    Column(modifier = Modifier.fillMaxWidth().padding(14.dp)) {
-                        DetailLine("Member Name", member.customerName)
-                        DetailLine("Member ID", member.customerId)
-                        DetailLine("Membership Plan", member.membershipPlan)
-                        DetailLine("Check-in Time", member.checkInTime)
-                        DetailLine("Gate Turnstile", "Scanner Terminal 01 (Front Desk)")
-                        DetailLine("Access Tier", "Full Gym + Cardio Zone")
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Text(
-                    text = "Members present this unique digital QR code on their BYCE app at the gym entrance scanner to record check-in and unlock turnstiles.",
-                    fontSize = 11.sp,
-                    color = ByceCoolGray,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                    lineHeight = 15.sp
-                )
-
-                Spacer(modifier = Modifier.height(18.dp))
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(Color(0xFF6B9330), Color(0xFF4E7320))
-                            )
-                        )
-                        .clickable { onDismiss() }
-                        .padding(vertical = 12.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "Close Pass", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                }
+                Text(text = "Close Pass", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextWhite)
             }
         }
     }
@@ -775,181 +771,179 @@ private fun CurrentlyInsideModal(
         }
     }
 
-    Dialog(onDismissRequest = onDismiss) {
-        LiquidGlassCard(
-            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-            shape = RoundedCornerShape(24.dp)
+    OwnerModalDialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp)
-                    .verticalScroll(rememberScrollState())
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(8.dp)
-                                    .background(StatusActiveGreen, CircleShape)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(text = "Currently Inside Gym", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                        }
-                        Text(text = "${insideMembers.size} Active Members Inside · Capacity: 100", fontSize = 11.sp, color = ByceCoolGray)
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .background(StatusActiveGreen, CircleShape)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(text = "Currently Inside Gym", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextWhite)
                     }
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
-                    }
+                    Text(text = "${insideMembers.size} Active Members Inside · Capacity: 100", fontSize = 11.sp, color = ByceCoolGray)
                 }
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
+                }
+            }
 
-                Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-                Text(
-                    text = "Live workout duration tracking for members currently inside. Members scanned the gym's front desk QR pass upon arrival.",
-                    fontSize = 11.sp,
-                    color = TextSubtle,
-                    lineHeight = 16.sp
-                )
+            Text(
+                text = "Live workout duration tracking for members currently inside. Members scanned the gym's front desk QR pass upon arrival.",
+                fontSize = 11.sp,
+                color = TextSubtle,
+                lineHeight = 16.sp
+            )
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                if (insideMembers.isEmpty()) {
-                    Box(
+            if (insideMembers.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "No members currently inside.", fontSize = 13.sp, color = TextMuted)
+                }
+            } else {
+                insideMembers.forEachIndexed { index, member ->
+                    // Base duration simulation + live ticking seconds
+                    val baseMinutes = when (index) {
+                        0 -> 85
+                        1 -> 52
+                        2 -> 34
+                        else -> 18
+                    }
+                    val totalSec = (baseMinutes * 60) + elapsedSeconds
+                    val hrs = totalSec / 3600
+                    val mins = (totalSec % 3600) / 60
+                    val secs = totalSec % 60
+                    val timerText = String.format("%02dh %02dm %02ds", hrs, mins, secs)
+
+                    LiquidGlassCard(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(24.dp),
-                        contentAlignment = Alignment.Center
+                            .padding(vertical = 5.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        backgroundColor = OwnerModalSurfaceElevated,
+                        borderWidth = 1.dp,
+                        borderColor = Color(0x25FFFFFF)
                     ) {
-                        Text(text = "No members currently inside.", fontSize = 13.sp, color = TextMuted)
-                    }
-                } else {
-                    insideMembers.forEachIndexed { index, member ->
-                        // Base duration simulation + live ticking seconds
-                        val baseMinutes = when (index) {
-                            0 -> 85
-                            1 -> 52
-                            2 -> 34
-                            else -> 18
-                        }
-                        val totalSec = (baseMinutes * 60) + elapsedSeconds
-                        val hrs = totalSec / 3600
-                        val mins = (totalSec % 3600) / 60
-                        val secs = totalSec % 60
-                        val timerText = String.format("%02dh %02dm %02ds", hrs, mins, secs)
-
-                        LiquidGlassCard(
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 5.dp),
-                            shape = RoundedCornerShape(16.dp)
+                                .padding(14.dp)
                         ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(14.dp)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(text = member.customerName, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                                        Text(text = "ID: ${member.customerId} · ${member.membershipPlan}", fontSize = 11.sp, color = ByceCoolGray)
-                                    }
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(text = member.customerName, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+                                    Text(text = "ID: ${member.customerId} · ${member.membershipPlan}", fontSize = 11.sp, color = ByceCoolGray)
+                                }
 
-                                    // Live Ticking Timer Pill
-                                    Box(
-                                        modifier = Modifier
-                                            .clip(RoundedCornerShape(10.dp))
-                                            .background(Color(0x3034D399))
-                                            .border(1.dp, StatusActiveGreen.copy(alpha = 0.6f), RoundedCornerShape(10.dp))
-                                            .padding(horizontal = 8.dp, vertical = 4.dp)
+                                // Live Ticking Timer Pill
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(Color(0x3034D399))
+                                        .border(1.dp, StatusActiveGreen.copy(alpha = 0.6f), RoundedCornerShape(10.dp))
+                                        .padding(horizontal = 8.dp, vertical = 4.dp)
                                     ) {
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Icon(Icons.Default.Timer, contentDescription = "Timer", tint = StatusActiveGreen, modifier = Modifier.size(13.dp))
-                                            Spacer(modifier = Modifier.width(4.dp))
-                                            Text(text = timerText, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = StatusActiveGreen)
-                                        }
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(Icons.Default.Timer, contentDescription = "Timer", tint = StatusActiveGreen, modifier = Modifier.size(13.dp))
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(text = timerText, fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = StatusActiveGreen)
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // QR Explanation Badge
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Default.QrCodeScanner, contentDescription = null, tint = ByceCoolGray, modifier = Modifier.size(12.dp))
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = "Scanned Front Desk QR at ${member.checkInTime} · Gate Scanner Turnstile",
+                                    fontSize = 10.sp,
+                                    color = ByceCoolGray
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(Color(0x20FFFFFF))
+                                        .clickable { onViewQr(member) }
+                                        .padding(vertical = 7.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(Icons.Default.QrCode2, contentDescription = null, tint = TextWhite, modifier = Modifier.size(13.dp))
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(text = "Member Pass", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = TextWhite)
                                     }
                                 }
 
-                                Spacer(modifier = Modifier.height(8.dp))
-
-                                // QR Explanation Badge
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalAlignment = Alignment.CenterVertically
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .background(Color(0x28FFFFFF))
+                                        .border(1.dp, GlassBorderSpecular, RoundedCornerShape(10.dp))
+                                        .clickable { onCheckOut(member.id) }
+                                        .padding(vertical = 7.dp),
+                                    contentAlignment = Alignment.Center
                                 ) {
-                                    Icon(Icons.Default.QrCodeScanner, contentDescription = null, tint = ByceCoolGray, modifier = Modifier.size(12.dp))
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text(
-                                        text = "Scanned Front Desk QR at ${member.checkInTime} · Gate Scanner Turnstile",
-                                        fontSize = 10.sp,
-                                        color = ByceCoolGray
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.height(10.dp))
-
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .clip(RoundedCornerShape(10.dp))
-                                            .background(Color(0x20FFFFFF))
-                                            .clickable { onViewQr(member) }
-                                            .padding(vertical = 7.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Icon(Icons.Default.QrCode2, contentDescription = null, tint = TextWhite, modifier = Modifier.size(13.dp))
-                                            Spacer(modifier = Modifier.width(4.dp))
-                                            Text(text = "Member Pass", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = TextWhite)
-                                        }
-                                    }
-
-                                    Box(
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .clip(RoundedCornerShape(10.dp))
-                                            .background(Color(0x28FFFFFF))
-                                            .border(1.dp, GlassBorderSpecular, RoundedCornerShape(10.dp))
-                                            .clickable { onCheckOut(member.id) }
-                                            .padding(vertical = 7.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(text = "Check Out Now", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                                    }
+                                    Text(text = "Check Out Now", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TextWhite)
                                 }
                             }
                         }
                     }
                 }
+            }
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0x25FFFFFF))
-                        .border(1.dp, GlassBorderSpecular, RoundedCornerShape(14.dp))
-                        .clickable { onDismiss() }
-                        .padding(vertical = 11.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "Close", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color(0x25FFFFFF))
+                    .border(1.dp, GlassBorderSpecular, RoundedCornerShape(14.dp))
+                    .clickable { onDismiss() }
+                    .padding(vertical = 11.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "Close", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextWhite)
             }
         }
     }
@@ -963,109 +957,107 @@ private fun CompletedVisitsModal(
     completedMembers: List<AttendanceItem>,
     onDismiss: () -> Unit
 ) {
-    Dialog(onDismissRequest = onDismiss) {
-        LiquidGlassCard(
-            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-            shape = RoundedCornerShape(24.dp)
+    OwnerModalDialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp)
-                    .verticalScroll(rememberScrollState())
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(text = "Completed Visits", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                        Text(text = "${completedMembers.size} Recorded Checkout Sessions Today", fontSize = 11.sp, color = ByceCoolGray)
-                    }
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
-                    }
+                Column {
+                    Text(text = "Completed Visits", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+                    Text(text = "${completedMembers.size} Recorded Checkout Sessions Today", fontSize = 11.sp, color = ByceCoolGray)
                 }
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
+                }
+            }
 
-                Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-                Text(
-                    text = "Full historical log of members who completed their gym workout and checked out today.",
-                    fontSize = 11.sp,
-                    color = TextSubtle
-                )
+            Text(
+                text = "Full historical log of members who completed their gym workout and checked out today.",
+                fontSize = 11.sp,
+                color = TextSubtle
+            )
 
-                Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
-                completedMembers.forEach { member ->
-                    LiquidGlassCard(
+            completedMembers.forEach { member ->
+                LiquidGlassCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    backgroundColor = OwnerModalSurfaceElevated,
+                    borderWidth = 1.dp,
+                    borderColor = Color(0x25FFFFFF)
+                ) {
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        shape = RoundedCornerShape(14.dp)
+                            .padding(12.dp)
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(12.dp)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                            Text(text = member.customerName, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(StatusActiveGreenBg)
+                                    .padding(horizontal = 6.dp, vertical = 2.dp)
                             ) {
-                                Text(text = member.customerName, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(6.dp))
-                                        .background(StatusActiveGreenBg)
-                                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                                ) {
-                                    Text(text = "✓ Completed", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = StatusActiveGreen)
-                                }
+                                Text(text = "✓ Completed", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = StatusActiveGreen)
                             }
+                        }
 
-                            Spacer(modifier = Modifier.height(4.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
 
-                            Text(text = "${member.membershipPlan} · ID: ${member.customerId}", fontSize = 11.sp, color = ByceCoolGray)
+                        Text(text = "${member.membershipPlan} · ID: ${member.customerId}", fontSize = 11.sp, color = ByceCoolGray)
 
-                            Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
 
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = "In: ${member.checkInTime} ➔ Out: ${member.checkOutTime ?: "11:35 AM"}",
-                                    fontSize = 11.sp,
-                                    color = TextWhite
-                                )
-                                Text(
-                                    text = "Duration: 1h 31m",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = ByceCoolGray
-                                )
-                            }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = "In: ${member.checkInTime} ➔ Out: ${member.checkOutTime ?: "11:35 AM"}",
+                                fontSize = 11.sp,
+                                color = TextWhite
+                            )
+                            Text(
+                                text = "Duration: 1h 31m",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = ByceCoolGray
+                            )
                         }
                     }
                 }
+            }
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0x25FFFFFF))
-                        .border(1.dp, GlassBorderSpecular, RoundedCornerShape(14.dp))
-                        .clickable { onDismiss() }
-                        .padding(vertical = 11.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "Close", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color(0x25FFFFFF))
+                    .border(1.dp, GlassBorderSpecular, RoundedCornerShape(14.dp))
+                    .clickable { onDismiss() }
+                    .padding(vertical = 11.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "Close", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextWhite)
             }
         }
     }
@@ -1123,160 +1115,161 @@ private fun DailyVisitsAnalyticsModal(
         )
     }
 
-    Dialog(onDismissRequest = onDismiss) {
-        LiquidGlassCard(
-            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-            shape = RoundedCornerShape(24.dp)
+    OwnerModalDialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp)
-                    .verticalScroll(rememberScrollState())
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text(text = "Daily Visits Analytics", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                        Text(text = "Average: $avgDailyVisits Visits/Day", fontSize = 11.sp, color = ByceCoolGray)
-                    }
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
+                Column {
+                    Text(text = "Daily Visits Analytics", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+                    Text(text = "Average: $avgDailyVisits Visits/Day", fontSize = 11.sp, color = ByceCoolGray)
+                }
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Sorting / Timeframe Tabs
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                listOf("Today", "Yesterday", "This Week", "This Month", "All Time").forEach { tab ->
+                    val isSelected = selectedSortTab == tab
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(if (isSelected) Color(0x35FFFFFF) else Color(0x12FFFFFF))
+                            .border(1.dp, if (isSelected) GlassBorderSpecular else Color.Transparent, RoundedCornerShape(10.dp))
+                            .clickable { selectedSortTab = tab }
+                            .padding(vertical = 7.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = tab,
+                            fontSize = 9.sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            color = if (isSelected) TextWhite else TextMuted
+                        )
                     }
                 }
+            }
 
-                Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
-                // Sorting / Timeframe Tabs
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    listOf("Today", "Yesterday", "This Week", "This Month", "All Time").forEach { tab ->
-                        val isSelected = selectedSortTab == tab
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(if (isSelected) Color(0x35FFFFFF) else Color(0x12FFFFFF))
-                                .border(1.dp, if (isSelected) GlassBorderSpecular else Color.Transparent, RoundedCornerShape(10.dp))
-                                .clickable { selectedSortTab = tab }
-                                .padding(vertical = 7.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = tab,
-                                fontSize = 9.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isSelected) TextWhite else TextMuted
-                            )
-                        }
+            // Interactive Bar Chart Graphic
+            LiquidGlassCard(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                backgroundColor = OwnerModalSurfaceElevated,
+                borderWidth = 1.dp,
+                borderColor = Color(0x25FFFFFF)
+            ) {
+                Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(text = "Footfall Distribution ($selectedSortTab)", fontSize = 12.sp, color = ByceCoolGray)
+                        Text(
+                            text = if (selectedSortTab == "This Month") "Total: 3,165" else if (selectedSortTab == "This Week") "Total: 617" else "Peak: 44",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = StatusActiveGreen
+                        )
                     }
-                }
 
-                Spacer(modifier = Modifier.height(18.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                // Interactive Bar Chart Graphic
-                LiquidGlassCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(text = "Footfall Distribution ($selectedSortTab)", fontSize = 12.sp, color = ByceCoolGray)
-                            Text(
-                                text = if (selectedSortTab == "This Month") "Total: 3,165" else if (selectedSortTab == "This Week") "Total: 617" else "Peak: 44",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = StatusActiveGreen
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        val maxVal = graphData.maxOfOrNull { it.second } ?: 1
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(120.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.Bottom
-                        ) {
-                            graphData.forEach { point ->
-                                val ratio = (point.second.toFloat() / maxVal).coerceIn(0.12f, 1f)
-                                Column(
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Bottom,
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Text(
-                                        text = "${point.second}",
-                                        fontSize = 9.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = TextWhite
-                                    )
-                                    Spacer(modifier = Modifier.height(4.dp))
-                                    Box(
-                                        modifier = Modifier
-                                            .width(14.dp)
-                                            .fillMaxHeight(ratio)
-                                            .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
-                                            .background(
-                                                Brush.verticalGradient(
-                                                    colors = listOf(
-                                                        Color(0xFF34D399),
-                                                        Color(0xFF059669)
-                                                    )
+                    val maxVal = graphData.maxOfOrNull { it.second } ?: 1
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.Bottom
+                    ) {
+                        graphData.forEach { point ->
+                            val ratio = (point.second.toFloat() / maxVal).coerceIn(0.12f, 1f)
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Bottom,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Text(
+                                    text = "${point.second}",
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = TextWhite
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Box(
+                                    modifier = Modifier
+                                        .width(14.dp)
+                                        .fillMaxHeight(ratio)
+                                        .clip(RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
+                                        .background(
+                                            Brush.verticalGradient(
+                                                colors = listOf(
+                                                    Color(0xFF34D399),
+                                                    Color(0xFF059669)
                                                 )
                                             )
-                                    )
-                                    Spacer(modifier = Modifier.height(6.dp))
-                                    Text(
-                                        text = point.first,
-                                        fontSize = 9.sp,
-                                        color = ByceCoolGray
-                                    )
-                                }
+                                        )
+                                )
+                                Spacer(modifier = Modifier.height(6.dp))
+                                Text(
+                                    text = point.first,
+                                    fontSize = 9.sp,
+                                    color = ByceCoolGray
+                                )
                             }
                         }
                     }
                 }
+            }
 
-                Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
-                // Analytics Insights
-                LiquidGlassCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp)
-                ) {
-                    Column(modifier = Modifier.fillMaxWidth().padding(14.dp)) {
-                        DetailLine("Peak Workout Window", "06:00 PM - 08:30 PM (Evening Rush)")
-                        DetailLine("Morning Workout Window", "06:00 AM - 08:30 AM (Morning Peak)")
-                        DetailLine("Avg Workout Duration", "1 hour 24 minutes")
-                        DetailLine("Weekday vs Weekend", "Weekday footfall +38% higher")
-                    }
+            // Analytics Insights
+            LiquidGlassCard(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(14.dp),
+                backgroundColor = OwnerModalSurfaceElevated,
+                borderWidth = 1.dp,
+                borderColor = Color(0x25FFFFFF)
+            ) {
+                Column(modifier = Modifier.fillMaxWidth().padding(14.dp)) {
+                    DetailLine("Peak Workout Window", "06:00 PM - 08:30 PM (Evening Rush)")
+                    DetailLine("Morning Workout Window", "06:00 AM - 08:30 AM (Morning Peak)")
+                    DetailLine("Avg Workout Duration", "1 hour 24 minutes")
+                    DetailLine("Weekday vs Weekend", "Weekday footfall +38% higher")
                 }
+            }
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(Color(0x25FFFFFF))
-                        .border(1.dp, GlassBorderSpecular, RoundedCornerShape(14.dp))
-                        .clickable { onDismiss() }
-                        .padding(vertical = 11.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "Close", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(Color(0x25FFFFFF))
+                    .border(1.dp, GlassBorderSpecular, RoundedCornerShape(14.dp))
+                    .clickable { onDismiss() }
+                    .padding(vertical = 11.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "Close", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextWhite)
             }
         }
     }
@@ -1310,73 +1303,68 @@ private fun ManualCheckInDialog(
     var customerId by remember { mutableStateOf("") }
     var membershipPlan by remember { mutableStateOf("Monthly") }
 
-    Dialog(onDismissRequest = onDismiss) {
-        LiquidGlassCard(
-            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-            shape = RoundedCornerShape(22.dp)
+    OwnerModalDialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Column(
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "Manual Gym Check-in", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            LiquidGlassTextField(
+                value = customerName,
+                onValueChange = { customerName = it },
+                label = "Customer Name",
+                placeholder = "e.g. Rahul Menon"
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            LiquidGlassTextField(
+                value = customerId,
+                onValueChange = { customerId = it },
+                label = "Customer ID (Optional)",
+                placeholder = "e.g. c1"
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            LiquidGlassTextField(
+                value = membershipPlan,
+                onValueChange = { membershipPlan = it },
+                label = "Active Membership Plan",
+                placeholder = "e.g. Yearly, Monthly"
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(text = "Manual Gym Check-in", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                LiquidGlassTextField(
-                    value = customerName,
-                    onValueChange = { customerName = it },
-                    label = "Customer Name",
-                    placeholder = "e.g. Rahul Menon"
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                LiquidGlassTextField(
-                    value = customerId,
-                    onValueChange = { customerId = it },
-                    label = "Customer ID (Optional)",
-                    placeholder = "e.g. c1"
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                LiquidGlassTextField(
-                    value = membershipPlan,
-                    onValueChange = { membershipPlan = it },
-                    label = "Active Membership Plan",
-                    placeholder = "e.g. Yearly, Monthly"
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color(0x35FFFFFF))
-                        .border(1.dp, GlassBorderSpecular, RoundedCornerShape(16.dp))
-                        .clickable {
-                            if (customerName.isNotBlank()) {
-                                onConfirm(customerId.ifBlank { "c_${System.currentTimeMillis() % 1000}" }, customerName, membershipPlan)
-                            }
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color(0x35FFFFFF))
+                    .border(1.dp, GlassBorderSpecular, RoundedCornerShape(16.dp))
+                    .clickable {
+                        if (customerName.isNotBlank()) {
+                            onConfirm(customerId.ifBlank { "c_${System.currentTimeMillis() % 1000}" }, customerName, membershipPlan)
                         }
-                        .padding(vertical = 12.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "Confirm Check-in", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                }
+                    }
+                    .padding(vertical = 12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "Confirm Check-in", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextWhite)
             }
         }
     }
@@ -1394,96 +1382,91 @@ fun ExportModalDialog(
 ) {
     var isExportTriggered by remember { mutableStateOf(false) }
 
-    Dialog(onDismissRequest = onDismiss) {
-        LiquidGlassCard(
-            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-            shape = RoundedCornerShape(22.dp)
+    OwnerModalDialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp)
-                    .verticalScroll(rememberScrollState())
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(text = "Export $moduleName", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
-                    }
+                Text(text = "Export $moduleName", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
                 }
+            }
 
-                Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-                Text(
-                    text = "Select your preferred file format to download the records for this module.",
-                    fontSize = 12.sp,
-                    color = ByceCoolGray
-                )
+            Text(
+                text = "Select your preferred file format to download the records for this module.",
+                fontSize = 12.sp,
+                color = ByceCoolGray
+            )
 
-                Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    listOf("CSV", "PDF").forEach { fmt ->
-                        val isSelected = selectedFormat == fmt
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(if (isSelected) Color(0x35FFFFFF) else Color(0x15FFFFFF))
-                                .border(1.dp, if (isSelected) GlassBorderSpecular else Color.Transparent, RoundedCornerShape(12.dp))
-                                .clickable { onFormatChange(fmt) }
-                                .padding(vertical = 12.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(text = fmt, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = if (isSelected) TextWhite else TextMuted)
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                if (isExportTriggered) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                listOf("CSV", "PDF").forEach { fmt ->
+                    val isSelected = selectedFormat == fmt
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(StatusActiveGreenBg)
-                            .border(1.dp, StatusActiveGreen.copy(alpha = 0.4f), RoundedCornerShape(14.dp))
-                            .padding(12.dp),
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (isSelected) Color(0x35FFFFFF) else Color(0x15FFFFFF))
+                            .border(1.dp, if (isSelected) GlassBorderSpecular else Color.Transparent, RoundedCornerShape(12.dp))
+                            .clickable { onFormatChange(fmt) }
+                            .padding(vertical = 12.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = "✓ $selectedFormat export scheduled. Backend download initiated.",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = StatusActiveGreen
-                        )
+                        Text(text = fmt, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = if (isSelected) TextWhite else TextMuted)
                     }
-                    Spacer(modifier = Modifier.height(14.dp))
                 }
+            }
 
+            Spacer(modifier = Modifier.height(20.dp))
+
+            if (isExportTriggered) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color(0x35FFFFFF))
-                        .border(1.dp, GlassBorderSpecular, RoundedCornerShape(16.dp))
-                        .clickable {
-                            isExportTriggered = true
-                            GymOwnerRepository.logAdminAction("Kishore Kumar", "Exported $moduleName ($selectedFormat)", "Export")
-                        }
-                        .padding(vertical = 12.dp),
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(StatusActiveGreenBg)
+                        .border(1.dp, StatusActiveGreen.copy(alpha = 0.4f), RoundedCornerShape(14.dp))
+                        .padding(12.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(text = "Download $selectedFormat", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+                    Text(
+                        text = "✓ $selectedFormat export scheduled. Backend download initiated.",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = StatusActiveGreen
+                    )
                 }
+                Spacer(modifier = Modifier.height(14.dp))
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color(0x35FFFFFF))
+                    .border(1.dp, GlassBorderSpecular, RoundedCornerShape(16.dp))
+                    .clickable {
+                        isExportTriggered = true
+                        GymOwnerRepository.logAdminAction("Kishore Kumar", "Exported $moduleName ($selectedFormat)", "Export")
+                    }
+                    .padding(vertical = 12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "Download $selectedFormat", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextWhite)
             }
         }
     }

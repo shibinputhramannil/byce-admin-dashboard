@@ -404,104 +404,102 @@ private fun MembershipDetailModal(
 ) {
     var reminderSent by remember { mutableStateOf(false) }
 
-    Dialog(onDismissRequest = onDismiss) {
-        LiquidGlassCard(
-            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-            shape = RoundedCornerShape(24.dp)
+    OwnerModalDialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp)
-                    .verticalScroll(rememberScrollState())
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                Text(text = "Membership Details", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            Text(text = "Customer: ${item.customerName}", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+            Text(text = "Email: ${item.customerEmail}", fontSize = 12.sp, color = ByceCoolGray)
+
+            Spacer(modifier = Modifier.height(14.dp))
+            Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0x20FFFFFF)))
+            Spacer(modifier = Modifier.height(12.dp))
+
+            DetailRow("Plan Name", item.planName)
+            DetailRow("Facility", item.gymName)
+            DetailRow("Start Date", item.startDate)
+            DetailRow("End Date", item.endDate)
+            DetailRow("Amount Paid", "₹${item.amount.toInt()}")
+
+            // Feature 8: Renewal Management Details
+            DetailRow("Renewal Status", if (item.status == "Expired") "Expired - Renewal Required" else "Active Pass")
+            DetailRow("Auto-Renew", "Manual (Customer Initiated)")
+
+            Spacer(modifier = Modifier.height(6.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(text = "Status", fontSize = 13.sp, color = TextMuted)
+                OwnerStatusBadge(status = item.status)
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (reminderSent) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(StatusActiveGreenBg)
+                        .padding(8.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(text = "Membership Details", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
-                    }
+                    Text(text = "✓ Renewal reminder notification queued.", fontSize = 11.sp, color = StatusActiveGreen)
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+            }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(Color(0x20FFFFFF))
+                        .clickable {
+                            reminderSent = true
+                            GymOwnerRepository.logAdminAction("Kishore Kumar", "Sent renewal reminder to ${item.customerName}", "Memberships")
+                        }
+                        .padding(vertical = 12.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "Send Reminder", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = TextWhite)
                 }
 
-                Spacer(modifier = Modifier.height(14.dp))
-
-                Text(text = "Customer: ${item.customerName}", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                Text(text = "Email: ${item.customerEmail}", fontSize = 12.sp, color = ByceCoolGray)
-
-                Spacer(modifier = Modifier.height(14.dp))
-                Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0x20FFFFFF)))
-                Spacer(modifier = Modifier.height(12.dp))
-
-                DetailRow("Plan Name", item.planName)
-                DetailRow("Facility", item.gymName)
-                DetailRow("Start Date", item.startDate)
-                DetailRow("End Date", item.endDate)
-                DetailRow("Amount Paid", "₹${item.amount.toInt()}")
-
-                // Feature 8: Renewal Management Details
-                DetailRow("Renewal Status", if (item.status == "Expired") "Expired - Renewal Required" else "Active Pass")
-                DetailRow("Auto-Renew", "Manual (Customer Initiated)")
-
-                Spacer(modifier = Modifier.height(6.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(Color(0xFF6B9330), Color(0xFF4E7320))
+                            )
+                        )
+                        .clickable { onDismiss() }
+                        .padding(vertical = 12.dp),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(text = "Status", fontSize = 13.sp, color = TextMuted)
-                    OwnerStatusBadge(status = item.status)
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                if (reminderSent) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(StatusActiveGreenBg)
-                            .padding(8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = "✓ Renewal reminder notification queued.", fontSize = 11.sp, color = StatusActiveGreen)
-                    }
-                    Spacer(modifier = Modifier.height(10.dp))
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(Color(0x20FFFFFF))
-                            .clickable {
-                                reminderSent = true
-                                GymOwnerRepository.logAdminAction("Kishore Kumar", "Sent renewal reminder to ${item.customerName}", "Memberships")
-                            }
-                            .padding(vertical = 12.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = "Send Reminder", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = TextWhite)
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(Color(0x35FFFFFF))
-                            .border(1.dp, GlassBorderSpecular, RoundedCornerShape(14.dp))
-                            .clickable { onDismiss() }
-                            .padding(vertical = 12.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = "Close", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                    }
+                    Text(text = "Close", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextWhite)
                 }
             }
         }

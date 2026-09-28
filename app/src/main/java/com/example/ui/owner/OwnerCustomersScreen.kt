@@ -409,20 +409,14 @@ private fun CustomerDetailDialog(
     val notes = remember(customer.id, notesRefresh) { GymOwnerRepository.getCustomerNotes(customer.id) }
     val activities = remember(customer.id) { GymOwnerRepository.getCustomerActivityTimeline(customer.id) }
 
-    Dialog(onDismissRequest = onDismiss) {
-        LiquidGlassCard(
+    OwnerModalDialog(onDismissRequest = onDismiss) {
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .wrapContentHeight(),
-            shape = RoundedCornerShape(24.dp)
+                .padding(20.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp)
-                    .verticalScroll(rememberScrollState())
-            ) {
-                Row(
+            Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
@@ -709,7 +703,6 @@ private fun CustomerDetailDialog(
                 }
             }
         }
-    }
 }
 
 @Composable
@@ -788,18 +781,13 @@ private fun AddCustomerDialog(
     var phone by remember { mutableStateOf("") }
     var plan by remember { mutableStateOf("Monthly") }
 
-    Dialog(onDismissRequest = onDismiss) {
-        LiquidGlassCard(
+    OwnerModalDialog(onDismissRequest = onDismiss) {
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .wrapContentHeight(),
-            shape = RoundedCornerShape(24.dp)
+                .padding(20.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp)
-            ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -885,5 +873,4 @@ private fun AddCustomerDialog(
                 }
             }
         }
-    }
 }

@@ -283,97 +283,95 @@ private fun CreatePlanDialog(
     var priceText by remember { mutableStateOf(initialPlan?.price?.toInt()?.toString() ?: "1499") }
     var featureInput by remember { mutableStateOf(initialPlan?.features?.joinToString(", ") ?: "Gym Floor Access, Locker, App Check-in") }
 
-    Dialog(onDismissRequest = onDismiss) {
-        LiquidGlassCard(
-            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-            shape = RoundedCornerShape(24.dp)
+    OwnerModalDialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+                .verticalScroll(androidx.compose.foundation.rememberScrollState())
         ) {
-            Column(
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = if (initialPlan != null) "Edit Plan" else "Create Membership Plan",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TextWhite
+                )
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            LiquidGlassTextField(value = name, onValueChange = { name = it }, label = "Plan Name", placeholder = "e.g. Quarterly Pro")
+            Spacer(modifier = Modifier.height(10.dp))
+            LiquidGlassTextField(value = description, onValueChange = { description = it }, label = "Description", placeholder = "Plan summary")
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                LiquidGlassTextField(
+                    value = durationText,
+                    onValueChange = { durationText = it },
+                    label = "Duration",
+                    placeholder = "1",
+                    modifier = Modifier.weight(1f)
+                )
+                LiquidGlassTextField(
+                    value = durationUnit,
+                    onValueChange = { durationUnit = it },
+                    label = "Unit",
+                    placeholder = "Month(s)",
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+            LiquidGlassTextField(value = priceText, onValueChange = { priceText = it }, label = "Price (₹)", placeholder = "e.g. 3999")
+            Spacer(modifier = Modifier.height(10.dp))
+            LiquidGlassTextField(value = featureInput, onValueChange = { featureInput = it }, label = "Features (comma separated)", placeholder = "Cardio, Steam, Locker")
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(20.dp)
-                    .verticalScroll(androidx.compose.foundation.rememberScrollState())
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = if (initialPlan != null) "Edit Plan" else "Create Membership Plan",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextWhite
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(
+                        Brush.horizontalGradient(
+                            colors = listOf(Color(0xFF6B9330), Color(0xFF4E7320))
+                        )
                     )
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                LiquidGlassTextField(value = name, onValueChange = { name = it }, label = "Plan Name", placeholder = "e.g. Quarterly Pro")
-                Spacer(modifier = Modifier.height(10.dp))
-                LiquidGlassTextField(value = description, onValueChange = { description = it }, label = "Description", placeholder = "Plan summary")
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    LiquidGlassTextField(
-                        value = durationText,
-                        onValueChange = { durationText = it },
-                        label = "Duration",
-                        placeholder = "1",
-                        modifier = Modifier.weight(1f)
-                    )
-                    LiquidGlassTextField(
-                        value = durationUnit,
-                        onValueChange = { durationUnit = it },
-                        label = "Unit",
-                        placeholder = "Month(s)",
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-                LiquidGlassTextField(value = priceText, onValueChange = { priceText = it }, label = "Price (₹)", placeholder = "e.g. 3999")
-                Spacer(modifier = Modifier.height(10.dp))
-                LiquidGlassTextField(value = featureInput, onValueChange = { featureInput = it }, label = "Features (comma separated)", placeholder = "Cardio, Steam, Locker")
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(Color(0x35FFFFFF))
-                        .border(1.dp, GlassBorderSpecular, RoundedCornerShape(16.dp))
-                        .clickable {
-                            val p = initialPlan ?: MembershipPlanItem(
-                                id = "plan_${System.currentTimeMillis()}",
+                    .clickable {
+                        val p = initialPlan ?: MembershipPlanItem(
+                            id = "plan_${System.currentTimeMillis()}",
+                            name = name.ifBlank { "Custom Plan" },
+                            description = description,
+                            duration = durationText.toIntOrNull() ?: 1,
+                            durationUnit = durationUnit,
+                            price = priceText.toDoubleOrNull() ?: 1499.0,
+                            features = featureInput.split(",").map { it.trim() }.filter { it.isNotBlank() },
+                            isActive = true
+                        )
+                        onSave(
+                            p.copy(
                                 name = name.ifBlank { "Custom Plan" },
                                 description = description,
                                 duration = durationText.toIntOrNull() ?: 1,
                                 durationUnit = durationUnit,
                                 price = priceText.toDoubleOrNull() ?: 1499.0,
-                                features = featureInput.split(",").map { it.trim() }.filter { it.isNotBlank() },
-                                isActive = true
+                                features = featureInput.split(",").map { it.trim() }.filter { it.isNotBlank() }
                             )
-                            onSave(
-                                p.copy(
-                                    name = name.ifBlank { "Custom Plan" },
-                                    description = description,
-                                    duration = durationText.toIntOrNull() ?: 1,
-                                    durationUnit = durationUnit,
-                                    price = priceText.toDoubleOrNull() ?: 1499.0,
-                                    features = featureInput.split(",").map { it.trim() }.filter { it.isNotBlank() }
-                                )
-                            )
-                        }
-                        .padding(vertical = 12.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "Save Plan", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                }
+                        )
+                    }
+                    .padding(vertical = 12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "Save Plan", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextWhite)
             }
         }
     }

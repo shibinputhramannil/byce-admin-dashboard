@@ -392,50 +392,48 @@ private fun ChangePasswordDialog(
     var newPass by remember { mutableStateOf("") }
     var confirmPass by remember { mutableStateOf("") }
 
-    Dialog(onDismissRequest = onDismiss) {
-        LiquidGlassCard(
-            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
-            shape = RoundedCornerShape(24.dp)
+    OwnerModalDialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(20.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(20.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(text = "Change Password", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
-                    }
+                Text(text = "Change Password", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
                 }
+            }
 
-                Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-                LiquidGlassTextField(value = oldPass, onValueChange = { oldPass = it }, label = "Current Password", isPassword = true)
-                Spacer(modifier = Modifier.height(8.dp))
-                LiquidGlassTextField(value = newPass, onValueChange = { newPass = it }, label = "New Password", isPassword = true)
-                Spacer(modifier = Modifier.height(8.dp))
-                LiquidGlassTextField(value = confirmPass, onValueChange = { confirmPass = it }, label = "Confirm New Password", isPassword = true)
+            LiquidGlassTextField(value = oldPass, onValueChange = { oldPass = it }, label = "Current Password", isPassword = true)
+            Spacer(modifier = Modifier.height(8.dp))
+            LiquidGlassTextField(value = newPass, onValueChange = { newPass = it }, label = "New Password", isPassword = true)
+            Spacer(modifier = Modifier.height(8.dp))
+            LiquidGlassTextField(value = confirmPass, onValueChange = { confirmPass = it }, label = "Confirm New Password", isPassword = true)
 
-                Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
-                        .background(
-                            Brush.verticalGradient(
-                                colors = listOf(Color(0xFF6B9330), Color(0xFF4E7320))
-                            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(
+                        Brush.verticalGradient(
+                            colors = listOf(Color(0xFF6B9330), Color(0xFF4E7320))
                         )
-                        .clickable { onDismiss() }
-                        .padding(vertical = 12.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = "Update Password", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextWhite)
-                }
+                    )
+                    .clickable { onDismiss() }
+                    .padding(vertical = 12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = "Update Password", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextWhite)
             }
         }
     }
