@@ -741,6 +741,7 @@ private fun ChangeOperatingStatusDialog(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(20.dp)
+                    .verticalScroll(rememberScrollState())
             ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -812,6 +813,7 @@ private fun RegenerateQrConfirmDialog(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(20.dp)
+                    .verticalScroll(rememberScrollState())
             ) {
                 Text(text = "Regenerate QR Code?", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextWhite)
                 Spacer(modifier = Modifier.height(10.dp))
