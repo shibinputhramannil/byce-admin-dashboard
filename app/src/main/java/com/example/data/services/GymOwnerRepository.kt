@@ -315,7 +315,9 @@ object GymOwnerRepository {
         AttendanceItem("att_5", "c8", "Vivek Raj", "07:05 AM", "08:30 AM", "Half Yearly", "Completed", "Today", null),
         AttendanceItem("att_6", "c6", "Arjun Prasad", "06:40 AM", "08:10 AM", "Yearly", "Completed", "Today", null),
         AttendanceItem("att_7", "c7", "Pooja Krishnan", "05:15 PM", "06:45 PM", "Quarterly", "Completed", "Yesterday", null),
-        AttendanceItem("att_8", "c5", "Sneha Joseph", "06:20 PM", "07:35 PM", "Monthly", "Completed", "Yesterday", null)
+        AttendanceItem("att_8", "c5", "Sneha Joseph", "06:20 PM", "07:35 PM", "Monthly", "Completed", "Yesterday", null),
+        AttendanceItem("att_9", "c9", "Karthik Suresh", "10:15 AM", null, "Quarterly Pass", "Checked In", "Today", "10:00 AM Slot"),
+        AttendanceItem("att_10", "c10", "Meera Nambiar", "10:28 AM", null, "Monthly Pass", "Checked In", "Today", null)
     )
 
     fun getAttendanceRecords(): List<AttendanceItem> = sampleAttendance
