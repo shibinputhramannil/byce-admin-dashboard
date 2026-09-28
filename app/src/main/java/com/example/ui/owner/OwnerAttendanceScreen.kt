@@ -46,6 +46,7 @@ fun OwnerAttendanceScreen(
     var showCompletedVisitsModal by remember { mutableStateOf(false) }
     var showDailyVisitsAnalyticsModal by remember { mutableStateOf(false) }
     var memberQrForDetail by remember { mutableStateOf<AttendanceItem?>(null) }
+    var returnModalAfterQr by remember { mutableStateOf<String?>(null) }
 
     val summary = remember(refreshTrigger) { GymOwnerRepository.getAttendanceSummary() }
     val attendanceList = remember(refreshTrigger) { GymOwnerRepository.getAttendanceRecords() }
@@ -235,7 +236,11 @@ fun OwnerAttendanceScreen(
         if (showTodayCheckinsModal) {
             TodayCheckinsModal(
                 checkins = attendanceList.filter { it.date == "Today" },
-                onSelectMemberQr = { memberQrForDetail = it },
+                onSelectMemberQr = {
+                    showTodayCheckinsModal = false
+                    returnModalAfterQr = "today"
+                    memberQrForDetail = it
+                },
                 onDismiss = { showTodayCheckinsModal = false }
             )
         }
@@ -246,7 +251,16 @@ fun OwnerAttendanceScreen(
         memberQrForDetail?.let { member ->
             MemberPersonalQrModal(
                 member = member,
-                onDismiss = { memberQrForDetail = null }
+                onDismiss = {
+                    val prev = returnModalAfterQr
+                    memberQrForDetail = null
+                    returnModalAfterQr = null
+                    if (prev == "today") {
+                        showTodayCheckinsModal = true
+                    } else if (prev == "inside") {
+                        showCurrentlyInsideModal = true
+                    }
+                }
             )
         }
 
@@ -260,7 +274,11 @@ fun OwnerAttendanceScreen(
                     GymOwnerRepository.recordCheckOut(recordId)
                     refreshTrigger++
                 },
-                onViewQr = { memberQrForDetail = it },
+                onViewQr = {
+                    showCurrentlyInsideModal = false
+                    returnModalAfterQr = "inside"
+                    memberQrForDetail = it
+                },
                 onDismiss = { showCurrentlyInsideModal = false }
             )
         }
