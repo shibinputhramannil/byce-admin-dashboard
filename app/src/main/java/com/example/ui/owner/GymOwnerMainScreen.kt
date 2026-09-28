@@ -30,6 +30,7 @@ import com.example.ui.theme.*
 
 enum class OwnerScreenRoute(val title: String) {
     DASHBOARD("Dashboard"),
+    ATTENDANCE("Attendance"),
     CUSTOMERS("Customers"),
     MEMBERSHIPS("Memberships"),
     PLANS("Membership Plans"),
@@ -39,6 +40,7 @@ enum class OwnerScreenRoute(val title: String) {
     GYM_LOCATION("Gym Location"),
     STAFF("Staff"),
     REPORTS("Reports"),
+    ACTIVITY_LOG("Activity Log"),
     NOTIFICATIONS("Notifications"),
     SETTINGS("Settings")
 }
@@ -103,8 +105,11 @@ fun GymOwnerMainScreen(
                             onNavigateToMemberships = { currentRoute = OwnerScreenRoute.MEMBERSHIPS },
                             onNavigateToPlans = { currentRoute = OwnerScreenRoute.PLANS },
                             onNavigateToPayments = { currentRoute = OwnerScreenRoute.PAYMENTS },
-                            onNavigateToBookings = { currentRoute = OwnerScreenRoute.BOOKINGS }
+                            onNavigateToBookings = { currentRoute = OwnerScreenRoute.BOOKINGS },
+                            onNavigateToAttendance = { currentRoute = OwnerScreenRoute.ATTENDANCE },
+                            onNavigateToGym = { currentRoute = OwnerScreenRoute.GYM_PROFILE }
                         )
+                        OwnerScreenRoute.ATTENDANCE -> OwnerAttendanceScreen()
                         OwnerScreenRoute.CUSTOMERS -> OwnerCustomersScreen()
                         OwnerScreenRoute.MEMBERSHIPS -> OwnerMembershipsScreen()
                         OwnerScreenRoute.PLANS -> OwnerPlansScreen()
@@ -114,6 +119,7 @@ fun GymOwnerMainScreen(
                         OwnerScreenRoute.GYM_LOCATION -> OwnerGymScreen(initialTab = "Location")
                         OwnerScreenRoute.STAFF -> OwnerStaffScreen()
                         OwnerScreenRoute.REPORTS -> OwnerReportsScreen()
+                        OwnerScreenRoute.ACTIVITY_LOG -> OwnerActivityLogScreen()
                         OwnerScreenRoute.NOTIFICATIONS -> OwnerNotificationsScreen()
                         OwnerScreenRoute.SETTINGS -> OwnerSettingsScreen(onLogoutClick = onLogout)
                     }

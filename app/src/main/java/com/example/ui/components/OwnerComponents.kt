@@ -629,6 +629,7 @@ fun OwnerNavigationDrawerSheet(
 ) {
     val navItems = listOf(
         OwnerNavItem("Dashboard", Icons.Default.Dashboard),
+        OwnerNavItem("Attendance", Icons.Default.QrCodeScanner, badge = "86"),
         OwnerNavItem("Customers", Icons.Default.People),
         OwnerNavItem("Memberships", Icons.Default.CardMembership),
         OwnerNavItem("Membership Plans", Icons.Default.PriceCheck),
@@ -638,6 +639,7 @@ fun OwnerNavigationDrawerSheet(
         OwnerNavItem("Gym Location", Icons.Default.PinDrop),
         OwnerNavItem("Staff", Icons.Default.Badge),
         OwnerNavItem("Reports", Icons.Default.BarChart),
+        OwnerNavItem("Activity Log", Icons.Default.History),
         OwnerNavItem("Notifications", Icons.Default.Notifications, badge = "2"),
         OwnerNavItem("Settings", Icons.Default.Settings)
     )

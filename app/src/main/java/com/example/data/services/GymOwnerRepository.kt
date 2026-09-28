@@ -120,12 +120,12 @@ object GymOwnerRepository {
     )
 
     private val sampleBookings = mutableListOf(
-        BookingItem("b1", "Rahul Menon", "+91 98471 22334", "Yearly Plan", "Today", "06:00 PM - 07:30 PM", "Upcoming"),
-        BookingItem("b2", "Ananya Nair", "+91 97455 33445", "Monthly Plan", "Today", "07:00 PM - 08:30 PM", "Upcoming"),
-        BookingItem("b3", "Mohammed Faizal", "+91 99951 44556", "Half Yearly", "Today", "08:00 AM - 09:30 AM", "Completed"),
-        BookingItem("b4", "Deepak Varma", "+91 94471 55667", "Quarterly Plan", "Today", "09:30 AM - 11:00 AM", "Completed"),
-        BookingItem("b5", "Sneha Joseph", "+91 96331 66778", "Monthly Plan", "Tomorrow", "06:30 AM - 08:00 AM", "Upcoming"),
-        BookingItem("b6", "Gautham Das", "+91 98950 11447", "Day Pass", "Today", "04:00 PM - 05:30 PM", "Cancelled")
+        BookingItem("b1", "Rahul Menon", "+91 98471 22334", "Yearly Plan", "Today", "06:00 PM - 07:30 PM", "Upcoming", arrivalStatus = "Confirmed"),
+        BookingItem("b2", "Ananya Nair", "+91 97455 33445", "Monthly Plan", "Today", "07:00 PM - 08:30 PM", "Upcoming", arrivalStatus = "Confirmed"),
+        BookingItem("b3", "Mohammed Faizal", "+91 99951 44556", "Half Yearly", "Today", "08:00 AM - 09:30 AM", "Completed", arrivalStatus = "Checked In"),
+        BookingItem("b4", "Deepak Varma", "+91 94471 55667", "Quarterly Plan", "Today", "09:30 AM - 11:00 AM", "Completed", arrivalStatus = "Checked In"),
+        BookingItem("b5", "Sneha Joseph", "+91 96331 66778", "Monthly Plan", "Tomorrow", "06:30 AM - 08:00 AM", "Upcoming", arrivalStatus = "Confirmed"),
+        BookingItem("b6", "Gautham Das", "+91 98950 11447", "Day Pass", "Today", "04:00 PM - 05:30 PM", "Cancelled", arrivalStatus = "Not Arrived")
     )
 
     private val sampleStaff = mutableListOf(
@@ -240,7 +240,22 @@ object GymOwnerRepository {
     fun cancelBooking(bookingId: String) {
         val index = sampleBookings.indexOfFirst { it.id == bookingId }
         if (index != -1) {
-            sampleBookings[index] = sampleBookings[index].copy(status = "Cancelled")
+            sampleBookings[index] = sampleBookings[index].copy(status = "Cancelled", arrivalStatus = "Not Arrived")
+            logAdminAction("Kishore Kumar", "Cancelled booking $bookingId", "Bookings")
+        }
+    }
+
+    fun markBookingArrived(bookingId: String, adminName: String = "Kishore Kumar") {
+        val index = sampleBookings.indexOfFirst { it.id == bookingId }
+        if (index != -1) {
+            val booking = sampleBookings[index]
+            sampleBookings[index] = booking.copy(arrivalStatus = "Checked In", status = "Completed")
+            recordCheckIn(
+                customerId = booking.id,
+                name = booking.customerName,
+                plan = booking.membershipPlan
+            )
+            logAdminAction(adminName, "Marked ${booking.customerName} as arrived / checked in for slot ${booking.time}", "Bookings")
         }
     }
 
@@ -274,5 +289,273 @@ object GymOwnerRepository {
         for (i in sampleNotifications.indices) {
             sampleNotifications[i] = sampleNotifications[i].copy(isRead = true)
         }
+    }
+
+    // ----------------------------------------------------
+    // FEATURE 1: TODAY'S GYM OPERATIONS
+    // ----------------------------------------------------
+    fun getTodayOperations(): TodayOperationsSummary = TodayOperationsSummary(
+        todayCheckins = 86,
+        todayBookings = 42,
+        activeMembersInside = 28,
+        newMembershipsToday = 7,
+        expiringSoonCount = 18,
+        todayRevenue = 24500.0,
+        pendingActionsCount = 5
+    )
+
+    // ----------------------------------------------------
+    // FEATURE 2: ATTENDANCE / CHECK-IN RECORDS
+    // ----------------------------------------------------
+    private val sampleAttendance = mutableListOf(
+        AttendanceItem("att_1", "c1", "Rahul Menon", "10:04 AM", "11:35 AM", "Yearly", "Completed", "Today", "06:00 PM Slot"),
+        AttendanceItem("att_2", "c2", "Ananya Nair", "09:12 AM", null, "Monthly", "Checked In", "Today", "07:00 PM Slot"),
+        AttendanceItem("att_3", "c3", "Mohammed Faizal", "08:15 AM", "09:45 AM", "Half Yearly", "Completed", "Today", "08:00 AM Slot"),
+        AttendanceItem("att_4", "c4", "Deepak Varma", "09:32 AM", null, "Quarterly", "Checked In", "Today", "09:30 AM Slot"),
+        AttendanceItem("att_5", "c8", "Vivek Raj", "07:05 AM", "08:30 AM", "Half Yearly", "Completed", "Today", null),
+        AttendanceItem("att_6", "c6", "Arjun Prasad", "06:40 AM", "08:10 AM", "Yearly", "Completed", "Today", null),
+        AttendanceItem("att_7", "c7", "Pooja Krishnan", "05:15 PM", "06:45 PM", "Quarterly", "Completed", "Yesterday", null),
+        AttendanceItem("att_8", "c5", "Sneha Joseph", "06:20 PM", "07:35 PM", "Monthly", "Completed", "Yesterday", null)
+    )
+
+    fun getAttendanceRecords(): List<AttendanceItem> = sampleAttendance
+
+    fun getAttendanceSummary(): AttendanceSummary = AttendanceSummary(
+        todayCheckins = 86,
+        currentlyInside = 28,
+        completedVisits = 58,
+        avgDailyVisits = 112
+    )
+
+    fun recordCheckIn(customerId: String, name: String, plan: String = "Active Plan"): AttendanceItem {
+        val newRecord = AttendanceItem(
+            id = "att_${System.currentTimeMillis()}",
+            customerId = customerId,
+            customerName = name,
+            checkInTime = "Just now",
+            checkOutTime = null,
+            membershipPlan = plan,
+            status = "Checked In",
+            date = "Today"
+        )
+        sampleAttendance.add(0, newRecord)
+        logAdminAction("Kishore Kumar", "Recorded manual check-in for $name", "Attendance")
+        return newRecord
+    }
+
+    fun recordCheckOut(attendanceId: String) {
+        val index = sampleAttendance.indexOfFirst { it.id == attendanceId }
+        if (index != -1) {
+            val record = sampleAttendance[index]
+            sampleAttendance[index] = record.copy(checkOutTime = "Just now", status = "Completed")
+            logAdminAction("Kishore Kumar", "Recorded check-out for ${record.customerName}", "Attendance")
+        }
+    }
+
+    // ----------------------------------------------------
+    // FEATURE 3: GYM QR CHECK-IN MANAGEMENT
+    // ----------------------------------------------------
+    private var gymQrPayload = "BYCE-GYM-IRON-HOUSE-KOZHIKODE-673004-AUTHENTICATED"
+
+    fun getGymQrPayload(): String = gymQrPayload
+
+    fun regenerateGymQrPayload(): String {
+        gymQrPayload = "BYCE-GYM-IRON-HOUSE-KOZHIKODE-${System.currentTimeMillis()}"
+        logAdminAction("Kishore Kumar", "Regenerated Gym Check-in QR Payload", "Gym QR")
+        return gymQrPayload
+    }
+
+    // ----------------------------------------------------
+    // FEATURE 4: MEMBERSHIPS EXPIRING SOON
+    // ----------------------------------------------------
+    private val sampleExpiringMemberships = listOf(
+        ExpiringMembershipItem("c5", "Sneha Joseph", "Monthly Plan", "17 Sep 2026", 2, "Expires in 2 days"),
+        ExpiringMembershipItem("c2", "Ananya Nair", "Monthly Plan", "30 Sep 2026", 6, "Expires in 6 days"),
+        ExpiringMembershipItem("c7", "Pooja Krishnan", "Quarterly Plan", "08 Oct 2026", 14, "Expires in 14 days"),
+        ExpiringMembershipItem("c4", "Deepak Varma", "Quarterly Plan", "11 Nov 2026", 28, "Expires in 28 days")
+    )
+
+    fun getExpiringMemberships(filterDays: Int = 30): List<ExpiringMembershipItem> {
+        return sampleExpiringMemberships.filter { it.daysRemaining <= filterDays }
+    }
+
+    // ----------------------------------------------------
+    // FEATURE 5: ABSENT / INACTIVE CUSTOMERS
+    // ----------------------------------------------------
+    private val sampleInactiveCustomers = listOf(
+        InactiveCustomerItem("c5", "Sneha Joseph", "17 Sep 2026", 7, "Monthly Plan", "17 Sep 2026", "Inactive"),
+        InactiveCustomerItem("c7", "Pooja Krishnan", "10 Sep 2026", 14, "Quarterly Plan", "19 Sep 2026", "Expired"),
+        InactiveCustomerItem("c9", "Rohan Pillai", "24 Aug 2026", 31, "Monthly Plan", "09 Sep 2026", "Cancelled"),
+        InactiveCustomerItem("c10", "Fahad Fazil", "12 Aug 2026", 43, "Half Yearly", "15 Feb 2027", "At Risk")
+    )
+
+    fun getInactiveCustomers(filterDays: Int = 30): List<InactiveCustomerItem> {
+        return sampleInactiveCustomers.filter { it.daysSinceVisit >= filterDays }
+    }
+
+    // ----------------------------------------------------
+    // FEATURE 6: CUSTOMER CRM NOTES
+    // ----------------------------------------------------
+    private val sampleCustomerNotes = mutableMapOf(
+        "c1" to mutableListOf(
+            CustomerCrmNote("n1", "c1", "Customer requested membership renewal information.", "Kishore Kumar", "21 Sep 2026, 11:30 AM"),
+            CustomerCrmNote("n2", "c1", "Prefers early morning slots (06:00 AM). Provided locker key #42.", "Sanjay Nambiar", "10 Jan 2026, 08:15 AM")
+        ),
+        "c2" to mutableListOf(
+            CustomerCrmNote("n3", "c2", "Customer visited reception regarding payment settlement.", "Kavya Sreedharan", "Today, 09:30 AM")
+        ),
+        "c4" to mutableListOf(
+            CustomerCrmNote("n4", "c4", "Requested receipt copy for company reimbursement.", "Sanjay Nambiar", "18 Aug 2026, 04:00 PM")
+        )
+    )
+
+    fun getCustomerNotes(customerId: String): List<CustomerCrmNote> {
+        return sampleCustomerNotes[customerId] ?: emptyList()
+    }
+
+    fun addCustomerNote(customerId: String, note: String, author: String = "Kishore Kumar") {
+        val list = sampleCustomerNotes.getOrPut(customerId) { mutableListOf() }
+        list.add(0, CustomerCrmNote(
+            id = "note_${System.currentTimeMillis()}",
+            customerId = customerId,
+            note = note,
+            createdBy = author,
+            createdAt = "Today, just now"
+        ))
+        logAdminAction(author, "Added CRM note for customer ID $customerId", "CRM Notes")
+    }
+
+    fun deleteCustomerNote(customerId: String, noteId: String) {
+        sampleCustomerNotes[customerId]?.removeAll { it.id == noteId }
+        logAdminAction("Kishore Kumar", "Removed CRM note $noteId", "CRM Notes")
+    }
+
+    // ----------------------------------------------------
+    // FEATURE 7: CUSTOMER ACTIVITY TIMELINE
+    // ----------------------------------------------------
+    private val sampleCustomerActivities = mapOf(
+        "c1" to listOf(
+            CustomerActivityEvent("act1", "c1", "Gym Check-in", "Checked in at reception scanner", "24 Sep", "10:04 AM", "CheckIn"),
+            CustomerActivityEvent("act2", "c1", "Booking Confirmed", "Reserved workout slot 06:00 PM", "24 Sep", "08:30 AM", "Booking"),
+            CustomerActivityEvent("act3", "c1", "Admin Note Added", "Customer requested membership renewal info", "21 Sep", "11:30 AM", "Note"),
+            CustomerActivityEvent("act4", "c1", "Payment Successful", "Renewed Yearly Plan - ₹11,999", "18 Sep", "10:24 AM", "Payment"),
+            CustomerActivityEvent("act5", "c1", "Membership Purchased", "Annual VIP Membership activated", "10 Jan", "09:00 AM", "Membership")
+        ),
+        "c2" to listOf(
+            CustomerActivityEvent("act6", "c2", "Gym Check-in", "Checked in at front desk scanner", "24 Sep", "09:12 AM", "CheckIn"),
+            CustomerActivityEvent("act7", "c2", "Payment Successful", "Monthly Plan Renewed - ₹1,499", "24 Sep", "09:15 AM", "Payment"),
+            CustomerActivityEvent("act8", "c2", "Booking Created", "Workout slot booked 07:00 PM", "23 Sep", "07:30 PM", "Booking"),
+            CustomerActivityEvent("act9", "c2", "Membership Activated", "Monthly Membership started", "01 Sep", "10:00 AM", "Membership")
+        )
+    )
+
+    fun getCustomerActivityTimeline(customerId: String): List<CustomerActivityEvent> {
+        return sampleCustomerActivities[customerId] ?: listOf(
+            CustomerActivityEvent("def1", customerId, "Gym Check-in", "Attendance logged via BYCE check-in", "22 Sep", "11:00 AM", "CheckIn"),
+            CustomerActivityEvent("def2", customerId, "Payment Received", "Membership transaction settled", "15 Sep", "02:15 PM", "Payment"),
+            CustomerActivityEvent("def3", customerId, "Membership Joined", "Registered on BYCE platform", "01 Aug", "10:00 AM", "Membership")
+        )
+    }
+
+    // ----------------------------------------------------
+    // FEATURE 9: OUTSTANDING / PENDING PAYMENTS
+    // ----------------------------------------------------
+    private val samplePendingPayments = mutableListOf(
+        PendingPaymentItem("p1", "Arjun Prasad", "Yearly Plan", 11999.0, "Due in 2 days", "Pending", "+91 98471 22345"),
+        PendingPaymentItem("p2", "Sneha Joseph", "Monthly Plan Renewal", 1499.0, "Due Yesterday", "Overdue", "+91 94462 88123"),
+        PendingPaymentItem("p3", "Karthik Suresh", "Quarterly Pass", 3999.0, "Due 21 Sep 2026", "Failed / Due", "+91 97455 19283"),
+        PendingPaymentItem("p4", "Rohit Nambiar", "Gym Locker Fee", 500.0, "Due in 5 days", "Pending", "+91 96330 45678"),
+        PendingPaymentItem("p5", "Meera Menon", "Monthly Pass", 1499.0, "Due in 3 days", "Pending", "+91 99951 84729")
+    )
+
+    fun getPendingPayments(): List<PendingPaymentItem> = samplePendingPayments
+
+    fun recordPendingPaymentPaid(paymentId: String, recordedBy: String = "Kishore Kumar") {
+        val index = samplePendingPayments.indexOfFirst { it.id == paymentId }
+        if (index != -1) {
+            val item = samplePendingPayments.removeAt(index)
+            logAdminAction(recordedBy, "Recorded manual payment for ${item.customerName} (₹${item.amount.toInt()})", "Payments")
+        }
+    }
+
+    fun sendPaymentReminder(paymentId: String, sender: String = "Kishore Kumar") {
+        val item = samplePendingPayments.find { it.id == paymentId }
+        if (item != null) {
+            logAdminAction(sender, "Sent payment reminder to ${item.customerName} (${item.phoneNumber})", "Payments")
+        }
+    }
+
+    // ----------------------------------------------------
+    // FEATURE 11: GYM CAPACITY & LIVE OCCUPANCY
+    // ----------------------------------------------------
+    private var gymOccupancy = GymOccupancy(
+        currentInside = 42,
+        capacity = 100,
+        percentage = 42,
+        status = "Normal",
+        peakPeriod = "06:00 PM - 08:30 PM",
+        dailyVisits = 148
+    )
+
+    fun getGymOccupancy(): GymOccupancy = gymOccupancy
+
+    // ----------------------------------------------------
+    // FEATURE 12 & 15: GYM OPERATING STATUS & VISIBILITY
+    // ----------------------------------------------------
+    private var gymOperatingStatus = GymOperatingStatus(
+        status = "OPEN",
+        openingTime = "05:30 AM",
+        closingTime = "10:30 PM",
+        visibilityStatus = "ACTIVE"
+    )
+
+    fun getGymOperatingStatus(): GymOperatingStatus = gymOperatingStatus
+
+    fun updateGymOperatingStatus(newStatus: String) {
+        gymOperatingStatus = gymOperatingStatus.copy(status = newStatus)
+        logAdminAction("Kishore Kumar", "Changed gym operating status to $newStatus", "Gym Operations")
+    }
+
+    // ----------------------------------------------------
+    // FEATURE 13: GYM PROFILE COMPLETENESS
+    // ----------------------------------------------------
+    fun getGymProfileCompleteness(): GymProfileCompleteness = GymProfileCompleteness(
+        percentage = 85,
+        missingFields = listOf("Gym Cover Photo", "Alternate Support Phone", "Instagram URL")
+    )
+
+    // ----------------------------------------------------
+    // FEATURE 16: OPERATIONAL ALERTS
+    // ----------------------------------------------------
+    fun getOperationalAlerts(): List<OperationalAlert> = listOf(
+        OperationalAlert("al_1", "18 memberships expire within the next 7 days.", "Membership", "High"),
+        OperationalAlert("al_2", "5 pending payments require follow-up settlement.", "Payment", "High"),
+        OperationalAlert("al_3", "3 workout reservations cancelled today.", "Booking", "Medium"),
+        OperationalAlert("al_4", "Gym profile is 85% complete. 2 fields require attention.", "Profile", "Info")
+    )
+
+    // ----------------------------------------------------
+    // FEATURE 20: ADMIN AUDIT / ACTIVITY LOG
+    // ----------------------------------------------------
+    private val sampleActivityLogs = mutableListOf(
+        AdminActivityLogItem("log_1", "Kishore Kumar", "Regenerated Gym Check-in QR Payload", "Gym QR", "Today, 10:14 AM"),
+        AdminActivityLogItem("log_2", "Sanjay Nambiar", "Recorded manual check-in for Rahul Menon", "Attendance", "Today, 10:04 AM"),
+        AdminActivityLogItem("log_3", "Kishore Kumar", "Updated Quarterly Membership Plan pricing to ₹3,999", "Plans", "Today, 09:30 AM"),
+        AdminActivityLogItem("log_4", "Kavya Sreedharan", "Added CRM note for Ananya Nair", "Customers", "Today, 09:16 AM"),
+        AdminActivityLogItem("log_5", "Kishore Kumar", "Verified bank settlement for TXN-984210", "Payments", "Yesterday, 06:45 PM"),
+        AdminActivityLogItem("log_6", "Sanjay Nambiar", "Changed operating status to OPEN", "Gym Status", "Yesterday, 05:30 AM"),
+        AdminActivityLogItem("log_7", "Kishore Kumar", "Exported monthly revenue report to CSV", "Reports", "22 Sep 2026, 04:20 PM")
+    )
+
+    fun getAdminActivityLogs(): List<AdminActivityLogItem> = sampleActivityLogs
+
+    fun logAdminAction(adminName: String, action: String, module: String) {
+        sampleActivityLogs.add(0, AdminActivityLogItem(
+            id = "log_${System.currentTimeMillis()}",
+            adminName = adminName,
+            action = action,
+            module = module,
+            timestamp = "Today, just now"
+        ))
     }
 }

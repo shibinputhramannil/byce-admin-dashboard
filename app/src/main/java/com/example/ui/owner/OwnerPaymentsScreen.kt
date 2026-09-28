@@ -33,7 +33,14 @@ fun OwnerPaymentsScreen(
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedStatusFilter by remember { mutableStateOf("All") }
+    var refreshTrigger by remember { mutableIntStateOf(0) }
+    var showExportDialog by remember { mutableStateOf(false) }
+    var exportFormat by remember { mutableStateOf("CSV") }
+    var paymentToRecordPaid by remember { mutableStateOf<com.example.data.models.PendingPaymentItem?>(null) }
+    var reminderToastMessage by remember { mutableStateOf<String?>(null) }
+
     val allPayments = remember { GymOwnerRepository.getPayments() }
+    val allPendingPayments = remember(refreshTrigger) { GymOwnerRepository.getPendingPayments() }
     var selectedPaymentForDetail by remember { mutableStateOf<PaymentItem?>(null) }
 
     val filteredPayments = remember(searchQuery, selectedStatusFilter, allPayments) {
@@ -46,6 +53,18 @@ fun OwnerPaymentsScreen(
         }
     }
 
+    val filteredPendingPayments = remember(searchQuery, selectedStatusFilter, allPendingPayments) {
+        allPendingPayments.filter { pending ->
+            pending.customerName.contains(searchQuery, ignoreCase = true) ||
+                    pending.membershipPlan.contains(searchQuery, ignoreCase = true) ||
+                    pending.phoneNumber.contains(searchQuery, ignoreCase = true)
+        }
+    }
+
+    val totalPendingAmount = remember(allPendingPayments) {
+        allPendingPayments.sumOf { it.amount }
+    }
+
     Box(modifier = modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier
@@ -54,19 +73,44 @@ fun OwnerPaymentsScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             item {
-                Text(
-                    text = "FINANCIAL LEDGER",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = TextSubtle,
-                    letterSpacing = 1.sp
-                )
-                Text(
-                    text = "Payments & Transactions",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TextWhite
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "FINANCIAL LEDGER",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = TextSubtle,
+                            letterSpacing = 1.sp
+                        )
+                        Text(
+                            text = "Payments & Transactions",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextWhite
+                        )
+                    }
+
+                    // Export Button
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(Color(0x20FFFFFF))
+                            .border(1.dp, GlassBorderLight, RoundedCornerShape(14.dp))
+                            .clickable { showExportDialog = true }
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.FileDownload, contentDescription = "Export", tint = TextWhite, modifier = Modifier.size(15.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(text = "Export", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = TextWhite)
+                        }
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(14.dp))
 
@@ -76,32 +120,60 @@ fun OwnerPaymentsScreen(
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     MiniPaymentKpi("Total Revenue", "₹4,82,500", TextWhite, Modifier.weight(1f))
-                    MiniPaymentKpi("Successful", "942", TextWhite, Modifier.weight(1f))
+                    MiniPaymentKpi("Pending Dues", "₹${totalPendingAmount.toInt()}", StatusPendingAmber, Modifier.weight(1f))
                 }
                 Spacer(modifier = Modifier.height(10.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    MiniPaymentKpi("Pending", "38", StatusPendingAmber, Modifier.weight(1f))
+                    MiniPaymentKpi("Successful", "942", TextWhite, Modifier.weight(1f))
                     MiniPaymentKpi("Failed", "6", StatusExpiredRed, Modifier.weight(1f))
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                reminderToastMessage?.let { msg ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(StatusActiveGreenBg)
+                            .border(1.dp, StatusActiveGreen.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
+                            .padding(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(text = msg, fontSize = 12.sp, color = StatusActiveGreen, fontWeight = FontWeight.SemiBold)
+                            IconButton(onClick = { reminderToastMessage = null }, modifier = Modifier.size(20.dp)) {
+                                Icon(Icons.Default.Close, contentDescription = "Dismiss", tint = StatusActiveGreen, modifier = Modifier.size(14.dp))
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+
                 OwnerSearchBar(
                     query = searchQuery,
                     onQueryChange = { searchQuery = it },
-                    placeholder = "Search transaction ID, customer, provider...",
-                    filterOptions = listOf("All", "Successful", "Pending", "Failed"),
+                    placeholder = "Search transaction, member, phone...",
+                    filterOptions = listOf("All", "Pending / Dues", "Successful", "Failed"),
                     selectedFilter = selectedStatusFilter,
                     onFilterSelected = { selectedStatusFilter = it }
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                val countText = if (selectedStatusFilter == "Pending / Dues") {
+                    "Showing ${filteredPendingPayments.size} pending dues"
+                } else {
+                    "Showing ${filteredPayments.size} transactions"
+                }
                 Text(
-                    text = "Showing ${filteredPayments.size} transactions",
+                    text = countText,
                     fontSize = 12.sp,
                     color = ByceCoolGray
                 )
@@ -109,19 +181,43 @@ fun OwnerPaymentsScreen(
                 Spacer(modifier = Modifier.height(4.dp))
             }
 
-            if (filteredPayments.isEmpty()) {
-                item {
-                    OwnerEmptyState(
-                        title = "No Payments Found",
-                        description = "No transaction matches filter '$selectedStatusFilter'."
-                    )
+            if (selectedStatusFilter == "Pending / Dues") {
+                if (filteredPendingPayments.isEmpty()) {
+                    item {
+                        OwnerEmptyState(
+                            title = "No Pending Dues",
+                            description = "All membership and subscription payments are up to date."
+                        )
+                    }
+                } else {
+                    items(filteredPendingPayments, key = { it.id }) { pending ->
+                        PendingPaymentCardRow(
+                            item = pending,
+                            onSendReminder = {
+                                GymOwnerRepository.sendPaymentReminder(pending.id)
+                                reminderToastMessage = "✓ Payment reminder dispatched to ${pending.customerName} via SMS & WhatsApp."
+                            },
+                            onRecordPayment = {
+                                paymentToRecordPaid = pending
+                            }
+                        )
+                    }
                 }
             } else {
-                items(filteredPayments, key = { it.transactionId }) { payment ->
-                    PaymentRowCard(
-                        payment = payment,
-                        onViewClick = { selectedPaymentForDetail = payment }
-                    )
+                if (filteredPayments.isEmpty()) {
+                    item {
+                        OwnerEmptyState(
+                            title = "No Payments Found",
+                            description = "No transaction matches filter '$selectedStatusFilter'."
+                        )
+                    }
+                } else {
+                    items(filteredPayments, key = { it.transactionId }) { payment ->
+                        PaymentRowCard(
+                            payment = payment,
+                            onViewClick = { selectedPaymentForDetail = payment }
+                        )
+                    }
                 }
             }
 
@@ -135,6 +231,251 @@ fun OwnerPaymentsScreen(
                 payment = payment,
                 onDismiss = { selectedPaymentForDetail = null }
             )
+        }
+
+        paymentToRecordPaid?.let { item ->
+            RecordPaymentConfirmDialog(
+                item = item,
+                onConfirm = {
+                    GymOwnerRepository.recordPendingPaymentPaid(item.id)
+                    paymentToRecordPaid = null
+                    refreshTrigger++
+                    reminderToastMessage = "✓ Recorded manual payment of ₹${item.amount.toInt()} for ${item.customerName}."
+                },
+                onDismiss = { paymentToRecordPaid = null }
+            )
+        }
+
+        if (showExportDialog) {
+            ExportModalDialog(
+                moduleName = "Payments & Transactions",
+                selectedFormat = exportFormat,
+                onFormatChange = { exportFormat = it },
+                onDismiss = { showExportDialog = false }
+            )
+        }
+    }
+}
+
+@Composable
+private fun PendingPaymentCardRow(
+    item: com.example.data.models.PendingPaymentItem,
+    onSendReminder: () -> Unit,
+    onRecordPayment: () -> Unit
+) {
+    val isOverdue = item.status.contains("Overdue", ignoreCase = true) || item.status.contains("Failed", ignoreCase = true)
+    LiquidGlassCard(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = item.customerName,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextWhite
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "${item.phoneNumber} · ${item.membershipPlan}",
+                        fontSize = 12.sp,
+                        color = ByceCoolGray
+                    )
+                }
+
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        text = "₹${item.amount.toInt()}",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = if (isOverdue) StatusExpiredRed else StatusPendingAmber
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(if (isOverdue) StatusExpiredRedBg else StatusPendingAmberBg)
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = item.status,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (isOverdue) StatusExpiredRed else StatusPendingAmber
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.CalendarToday,
+                        contentDescription = null,
+                        tint = if (isOverdue) StatusExpiredRed else ByceCoolGray,
+                        modifier = Modifier.size(13.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = item.dueDate,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = if (isOverdue) StatusExpiredRed else ByceCoolGray
+                    )
+                }
+
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // Send Reminder Button
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Color(0x20FFFFFF))
+                            .clickable { onSendReminder() }
+                            .padding(horizontal = 10.dp, vertical = 6.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.Send,
+                                contentDescription = "Remind",
+                                tint = TextWhite,
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(text = "Remind", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+                        }
+                    }
+
+                    // Record Payment Button
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(
+                                Brush.horizontalGradient(
+                                    colors = listOf(StatusActiveGreen.copy(alpha = 0.3f), StatusActiveGreen.copy(alpha = 0.15f))
+                                )
+                            )
+                            .border(1.dp, StatusActiveGreen.copy(alpha = 0.5f), RoundedCornerShape(10.dp))
+                            .clickable { onRecordPayment() }
+                            .padding(horizontal = 10.dp, vertical = 6.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = "Record Paid",
+                                tint = StatusActiveGreen,
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(text = "Record Paid", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = StatusActiveGreen)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun RecordPaymentConfirmDialog(
+    item: com.example.data.models.PendingPaymentItem,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        LiquidGlassCard(
+            modifier = Modifier.fillMaxWidth().wrapContentHeight(),
+            shape = RoundedCornerShape(22.dp)
+        ) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(20.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = "Record Payment", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+                    IconButton(onClick = onDismiss) {
+                        Icon(Icons.Default.Close, contentDescription = "Close", tint = TextMuted)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                Text(
+                    text = "Confirm manual payment collection for this member:",
+                    fontSize = 12.sp,
+                    color = ByceCoolGray
+                )
+
+                Spacer(modifier = Modifier.height(14.dp))
+
+                LiquidGlassCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(14.dp)
+                ) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(14.dp)) {
+                        ReceiptRow("Member", item.customerName)
+                        ReceiptRow("Phone", item.phoneNumber)
+                        ReceiptRow("Plan", item.membershipPlan)
+                        ReceiptRow("Amount", "₹${item.amount.toInt()}")
+                        ReceiptRow("Status", item.dueDate)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(Color(0x20FFFFFF))
+                            .clickable { onDismiss() }
+                            .padding(vertical = 12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "Cancel", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextWhite)
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(
+                                Brush.horizontalGradient(
+                                    colors = listOf(Color(0xFF6B9330), Color(0xFF4E7320))
+                                )
+                            )
+                            .clickable { onConfirm() }
+                            .padding(vertical = 12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "Mark Paid", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+                    }
+                }
+            }
         }
     }
 }

@@ -40,11 +40,22 @@ fun OwnerDashboardScreen(
     onNavigateToPlans: () -> Unit = {},
     onNavigateToPayments: () -> Unit = {},
     onNavigateToBookings: () -> Unit = {},
+    onNavigateToAttendance: () -> Unit = {},
+    onNavigateToGym: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
     val kpis = remember { GymOwnerRepository.getDashboardKpis() }
     val membershipOverview = remember { GymOwnerRepository.getMembershipOverview() }
+    val todayOps = remember { GymOwnerRepository.getTodayOperations() }
+    val occupancy = remember { GymOwnerRepository.getGymOccupancy() }
+    val alerts = remember { GymOwnerRepository.getOperationalAlerts() }
+    var selectedExpiryFilter by remember { mutableStateOf(15) }
+    val expiringMemberships = remember(selectedExpiryFilter) {
+        GymOwnerRepository.getExpiringMemberships(selectedExpiryFilter)
+    }
+    val pendingPaymentsList = remember { GymOwnerRepository.getPendingPayments().take(3) }
+
     var selectedRevenueFilter by remember { mutableStateOf("30 Days") }
     val revenueData = remember(selectedRevenueFilter) {
         GymOwnerRepository.getRevenueChartData(selectedRevenueFilter)
@@ -121,6 +132,60 @@ fun OwnerDashboardScreen(
             }
         }
 
+        // ----------------------------------------------------
+        // FEATURE 1: TODAY'S OPERATIONS
+        // ----------------------------------------------------
+        OwnerSectionHeader(
+            title = "Today's Operations",
+            actionLabel = "Live Attendance",
+            onActionClick = onNavigateToAttendance
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LiquidGlassCard(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(22.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(18.dp)
+            ) {
+                Text(
+                    text = "TODAY'S OPERATIONS",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = TextSubtle,
+                    letterSpacing = 1.sp
+                )
+                Spacer(modifier = Modifier.height(14.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    TodayOpsMetricBox("Check-ins", todayOps.todayCheckins.toString(), Icons.Default.QrCodeScanner, Modifier.weight(1f))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    TodayOpsMetricBox("Bookings", todayOps.todayBookings.toString(), Icons.Default.EventAvailable, Modifier.weight(1f))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    TodayOpsMetricBox("Inside Now", todayOps.activeMembersInside.toString(), Icons.Default.DirectionsRun, Modifier.weight(1f))
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    TodayOpsMetricBox("New Members", todayOps.newMembershipsToday.toString(), Icons.Default.PersonAddAlt1, Modifier.weight(1f))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    TodayOpsMetricBox("Expiring Soon", todayOps.expiringSoonCount.toString(), Icons.Default.HourglassTop, Modifier.weight(1f))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    TodayOpsMetricBox("Revenue", "₹${todayOps.todayRevenue.toInt()}", Icons.Default.CurrencyRupee, Modifier.weight(1f))
+                }
+            }
+        }
+
         Spacer(modifier = Modifier.height(20.dp))
 
         // ----------------------------------------------------
@@ -168,12 +233,172 @@ fun OwnerDashboardScreen(
             )
         }
 
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // ----------------------------------------------------
+        // FEATURE 11: GYM CAPACITY & LIVE OCCUPANCY
+        // ----------------------------------------------------
+        LiquidGlassCard(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(18.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "CURRENT GYM OCCUPANCY",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = TextSubtle,
+                            letterSpacing = 1.sp
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row(verticalAlignment = Alignment.Bottom) {
+                            Text(
+                                text = "${occupancy.currentInside} / ${occupancy.capacity}",
+                                fontSize = 22.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = TextWhite
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "${occupancy.percentage}% capacity",
+                                fontSize = 12.sp,
+                                color = TextMuted,
+                                modifier = Modifier.padding(bottom = 2.dp)
+                            )
+                        }
+                    }
+                    OwnerStatusBadge(status = occupancy.status)
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Occupancy progress bar
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(Color(0x20FFFFFF))
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(occupancy.percentage / 100f)
+                            .fillMaxHeight()
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(
+                                Brush.horizontalGradient(
+                                    colors = listOf(StatusActiveGreen, Color(0x8034D399))
+                                )
+                            )
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Daily visits: ${occupancy.dailyVisits}",
+                        fontSize = 11.sp,
+                        color = ByceCoolGray
+                    )
+                    Text(
+                        text = "Peak: ${occupancy.peakPeriod}",
+                        fontSize = 11.sp,
+                        color = ByceCoolGray
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // ----------------------------------------------------
+        // FEATURE 16: OPERATIONAL ALERTS
+        // ----------------------------------------------------
+        OwnerSectionHeader(title = "Operational Alerts")
+        Spacer(modifier = Modifier.height(8.dp))
+
+        alerts.forEach { alert ->
+            LiquidGlassCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 3.dp),
+                shape = RoundedCornerShape(14.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = if (alert.urgency == "High") Icons.Default.Warning else Icons.Default.Info,
+                        contentDescription = null,
+                        tint = if (alert.urgency == "High") StatusPendingAmber else TextSubtle,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = alert.message,
+                        fontSize = 12.sp,
+                        color = TextWhite,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+        }
+
         Spacer(modifier = Modifier.height(24.dp))
 
         // ----------------------------------------------------
-        // QUICK ACTIONS
+        // FEATURE 17: QUICK ACTIONS
         // ----------------------------------------------------
         OwnerSectionHeader(title = "Quick Actions")
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            QuickActionButton(
+                label = "Attendance",
+                icon = Icons.Default.FactCheck,
+                onClick = onNavigateToAttendance,
+                modifier = Modifier.weight(1f)
+            )
+            QuickActionButton(
+                label = "Expiring",
+                icon = Icons.Default.HourglassBottom,
+                onClick = onNavigateToMemberships,
+                modifier = Modifier.weight(1f)
+            )
+            QuickActionButton(
+                label = "Pending Dues",
+                icon = Icons.Default.ReceiptLong,
+                onClick = onNavigateToPayments,
+                modifier = Modifier.weight(1f)
+            )
+            QuickActionButton(
+                label = "Gym Profile",
+                icon = Icons.Default.FitnessCenter,
+                onClick = onNavigateToGym,
+                modifier = Modifier.weight(1f)
+            )
+        }
+
         Spacer(modifier = Modifier.height(8.dp))
 
         Row(
@@ -193,15 +418,15 @@ fun OwnerDashboardScreen(
                 modifier = Modifier.weight(1f)
             )
             QuickActionButton(
-                label = "View Payments",
-                icon = Icons.Default.ReceiptLong,
-                onClick = onNavigateToPayments,
-                modifier = Modifier.weight(1f)
-            )
-            QuickActionButton(
                 label = "Bookings",
                 icon = Icons.Default.CalendarToday,
                 onClick = onNavigateToBookings,
+                modifier = Modifier.weight(1f)
+            )
+            QuickActionButton(
+                label = "QR Pass",
+                icon = Icons.Default.QrCode2,
+                onClick = onNavigateToGym,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -350,6 +575,124 @@ fun OwnerDashboardScreen(
                     Box(modifier = Modifier.weight(membershipOverview.pending / total).fillMaxHeight().background(StatusPendingAmber))
                     Box(modifier = Modifier.weight(membershipOverview.expired / total).fillMaxHeight().background(StatusExpiredRed))
                     Box(modifier = Modifier.weight(membershipOverview.cancelled / total).fillMaxHeight().background(StatusCancelledGray))
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // ----------------------------------------------------
+        // FEATURE 4: MEMBERSHIPS EXPIRING SOON
+        // ----------------------------------------------------
+        OwnerSectionHeader(
+            title = "Memberships Expiring Soon",
+            actionLabel = "View All",
+            onActionClick = onNavigateToMemberships
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Expiry Filter Pills
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            listOf(Pair(7, "7 Days"), Pair(15, "15 Days"), Pair(30, "30 Days")).forEach { (days, label) ->
+                val isSelected = selectedExpiryFilter == days
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(if (isSelected) Color(0x35FFFFFF) else Color(0x12FFFFFF))
+                        .border(1.dp, if (isSelected) GlassBorderSpecular else Color.Transparent, RoundedCornerShape(12.dp))
+                        .clickable { selectedExpiryFilter = days }
+                        .padding(vertical = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = label,
+                        fontSize = 11.sp,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                        color = if (isSelected) TextWhite else TextMuted
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        if (expiringMemberships.isEmpty()) {
+            LiquidGlassCard(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
+                Box(modifier = Modifier.fillMaxWidth().padding(20.dp), contentAlignment = Alignment.Center) {
+                    Text(text = "No memberships expiring within $selectedExpiryFilter days.", fontSize = 12.sp, color = TextMuted)
+                }
+            }
+        } else {
+            expiringMemberships.forEach { item ->
+                LiquidGlassCard(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(text = item.customerName, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = TextWhite)
+                            Text(text = "${item.membershipPlan} · Expires in ${item.daysRemaining} days (${item.expiryDate})", fontSize = 11.sp, color = ByceCoolGray)
+                        }
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(Color(0x28FFFFFF))
+                                .border(1.dp, GlassBorderSpecular, RoundedCornerShape(10.dp))
+                                .clickable { onNavigateToMemberships() }
+                                .padding(horizontal = 12.dp, vertical = 6.dp)
+                        ) {
+                            Text(text = "View", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // ----------------------------------------------------
+        // FEATURE 9: OUTSTANDING / PENDING PAYMENTS
+        // ----------------------------------------------------
+        OwnerSectionHeader(
+            title = "Pending Payments & Dues",
+            actionLabel = "View All",
+            onActionClick = onNavigateToPayments
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        pendingPaymentsList.forEach { pending ->
+            LiquidGlassCard(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(text = pending.customerName, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextWhite)
+                        Text(text = "${pending.membershipPlan} · ${pending.dueDate}", fontSize = 11.sp, color = ByceCoolGray)
+                    }
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(text = "₹${pending.amount.toInt()}", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = StatusPendingAmber)
+                        Spacer(modifier = Modifier.height(2.dp))
+                        OwnerStatusBadge(status = pending.status)
+                    }
                 }
             }
         }
@@ -623,5 +966,30 @@ private fun MembershipStatusCounter(
             fontWeight = FontWeight.Bold,
             color = TextWhite
         )
+    }
+}
+
+@Composable
+private fun TodayOpsMetricBox(
+    label: String,
+    value: String,
+    icon: ImageVector,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .clip(RoundedCornerShape(14.dp))
+            .background(Color(0x18FFFFFF))
+            .border(1.dp, GlassBorderLight, RoundedCornerShape(14.dp))
+            .padding(vertical = 12.dp, horizontal = 6.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(imageVector = icon, contentDescription = null, tint = TextWhite, modifier = Modifier.size(16.dp))
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(text = value, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(text = label, fontSize = 10.sp, color = ByceCoolGray, maxLines = 1)
+        }
     }
 }

@@ -33,6 +33,9 @@ fun OwnerBookingsScreen(
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var selectedFilter by remember { mutableStateOf("All") }
+    var showExportDialog by remember { mutableStateOf(false) }
+    var exportFormat by remember { mutableStateOf("CSV") }
+    var statusMessage by remember { mutableStateOf<String?>(null) }
     val bookings = remember { mutableStateListOf<BookingItem>().apply { addAll(GymOwnerRepository.getBookings()) } }
     var selectedBookingForDetail by remember { mutableStateOf<BookingItem?>(null) }
 
@@ -59,21 +62,69 @@ fun OwnerBookingsScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             item {
-                Text(
-                    text = "CHECK-IN RESERVATIONS",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = TextSubtle,
-                    letterSpacing = 1.sp
-                )
-                Text(
-                    text = "Member Slot Bookings",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = TextWhite
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column {
+                        Text(
+                            text = "CHECK-IN RESERVATIONS",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = TextSubtle,
+                            letterSpacing = 1.sp
+                        )
+                        Text(
+                            text = "Member Slot Bookings",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextWhite
+                        )
+                    }
+
+                    // Export Button
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(Color(0x20FFFFFF))
+                            .border(1.dp, GlassBorderLight, RoundedCornerShape(14.dp))
+                            .clickable { showExportDialog = true }
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.FileDownload, contentDescription = "Export", tint = TextWhite, modifier = Modifier.size(15.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(text = "Export", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = TextWhite)
+                        }
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(14.dp))
+
+                statusMessage?.let { msg ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(StatusActiveGreenBg)
+                            .border(1.dp, StatusActiveGreen.copy(alpha = 0.4f), RoundedCornerShape(12.dp))
+                            .padding(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(text = msg, fontSize = 12.sp, color = StatusActiveGreen, fontWeight = FontWeight.SemiBold)
+                            IconButton(onClick = { statusMessage = null }, modifier = Modifier.size(20.dp)) {
+                                Icon(Icons.Default.Close, contentDescription = "Dismiss", tint = StatusActiveGreen, modifier = Modifier.size(14.dp))
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
 
                 OwnerSearchBar(
                     query = searchQuery,
@@ -110,8 +161,16 @@ fun OwnerBookingsScreen(
                         onCancelClick = {
                             val index = bookings.indexOfFirst { it.id == booking.id }
                             if (index != -1) {
-                                bookings[index] = booking.copy(status = "Cancelled")
+                                bookings[index] = booking.copy(status = "Cancelled", arrivalStatus = "Not Arrived")
                                 GymOwnerRepository.cancelBooking(booking.id)
+                            }
+                        },
+                        onMarkArrived = {
+                            val index = bookings.indexOfFirst { it.id == booking.id }
+                            if (index != -1) {
+                                bookings[index] = booking.copy(arrivalStatus = "Checked In", status = "Completed")
+                                GymOwnerRepository.markBookingArrived(booking.id)
+                                statusMessage = "✓ ${booking.customerName} marked as Arrived & Checked In for ${booking.time} slot."
                             }
                         }
                     )
@@ -130,11 +189,29 @@ fun OwnerBookingsScreen(
                 onCancelBooking = {
                     val index = bookings.indexOfFirst { it.id == booking.id }
                     if (index != -1) {
-                        bookings[index] = booking.copy(status = "Cancelled")
+                        bookings[index] = booking.copy(status = "Cancelled", arrivalStatus = "Not Arrived")
                         GymOwnerRepository.cancelBooking(booking.id)
                     }
                     selectedBookingForDetail = null
+                },
+                onMarkArrived = {
+                    val index = bookings.indexOfFirst { it.id == booking.id }
+                    if (index != -1) {
+                        bookings[index] = booking.copy(arrivalStatus = "Checked In", status = "Completed")
+                        GymOwnerRepository.markBookingArrived(booking.id)
+                        statusMessage = "✓ ${booking.customerName} marked as Arrived & Checked In."
+                    }
+                    selectedBookingForDetail = null
                 }
+            )
+        }
+
+        if (showExportDialog) {
+            ExportModalDialog(
+                moduleName = "Slot Bookings",
+                selectedFormat = exportFormat,
+                onFormatChange = { exportFormat = it },
+                onDismiss = { showExportDialog = false }
             )
         }
     }
@@ -144,7 +221,8 @@ fun OwnerBookingsScreen(
 private fun BookingRowCard(
     booking: BookingItem,
     onViewClick: () -> Unit,
-    onCancelClick: () -> Unit
+    onCancelClick: () -> Unit,
+    onMarkArrived: () -> Unit
 ) {
     LiquidGlassCard(
         modifier = Modifier.fillMaxWidth(),
@@ -160,7 +238,7 @@ private fun BookingRowCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = booking.customerName,
                         fontSize = 15.sp,
@@ -173,7 +251,11 @@ private fun BookingRowCard(
                         color = ByceCoolGray
                     )
                 }
-                OwnerStatusBadge(status = booking.status)
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    // Feature 10: Arrival Status Connection Badge
+                    ArrivalStatusBadge(arrivalStatus = booking.arrivalStatus)
+                    OwnerStatusBadge(status = booking.status)
+                }
             }
 
             Spacer(modifier = Modifier.height(10.dp))
@@ -199,6 +281,33 @@ private fun BookingRowCard(
                 }
 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // Feature 10: "Mark Arrived" quick action if not yet checked in
+                    if (booking.arrivalStatus != "Checked In" && booking.status != "Cancelled") {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(
+                                    Brush.horizontalGradient(
+                                        colors = listOf(StatusActiveGreen.copy(alpha = 0.35f), StatusActiveGreen.copy(alpha = 0.15f))
+                                    )
+                                )
+                                .border(1.dp, StatusActiveGreen.copy(alpha = 0.5f), RoundedCornerShape(12.dp))
+                                .clickable { onMarkArrived() }
+                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Check, contentDescription = "Arrived", tint = StatusActiveGreen, modifier = Modifier.size(12.dp))
+                                Spacer(modifier = Modifier.width(3.dp))
+                                Text(
+                                    text = "Mark Arrived",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = StatusActiveGreen
+                                )
+                            }
+                        }
+                    }
+
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(12.dp))
@@ -237,10 +346,34 @@ private fun BookingRowCard(
 }
 
 @Composable
+private fun ArrivalStatusBadge(arrivalStatus: String) {
+    val (bgColor, textColor, label) = when (arrivalStatus) {
+        "Checked In" -> Triple(StatusActiveGreenBg, StatusActiveGreen, "✓ Checked In")
+        "Not Arrived" -> Triple(StatusPendingAmberBg, StatusPendingAmber, "Not Arrived")
+        else -> Triple(Color(0x25FFFFFF), TextWhite, arrivalStatus)
+    }
+
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(6.dp))
+            .background(bgColor)
+            .padding(horizontal = 6.dp, vertical = 2.dp)
+    ) {
+        Text(
+            text = label,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.Bold,
+            color = textColor
+        )
+    }
+}
+
+@Composable
 private fun BookingDetailModal(
     booking: BookingItem,
     onDismiss: () -> Unit,
-    onCancelBooking: () -> Unit
+    onCancelBooking: () -> Unit,
+    onMarkArrived: () -> Unit = {}
 ) {
     Dialog(onDismissRequest = onDismiss) {
         LiquidGlassCard(
@@ -274,6 +407,7 @@ private fun BookingDetailModal(
                 BookingDetailRow("Scheduled Date", booking.date)
                 BookingDetailRow("Slot Window", booking.time)
                 BookingDetailRow("Gym Location", "Iron House Fitness, Kozhikode")
+                BookingDetailRow("Arrival Status", booking.arrivalStatus)
 
                 Spacer(modifier = Modifier.height(6.dp))
                 Row(
@@ -286,6 +420,26 @@ private fun BookingDetailModal(
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
+
+                if (booking.arrivalStatus != "Checked In" && booking.status != "Cancelled") {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(
+                                Brush.horizontalGradient(
+                                    colors = listOf(StatusActiveGreen.copy(alpha = 0.35f), StatusActiveGreen.copy(alpha = 0.15f))
+                                )
+                            )
+                            .border(1.dp, StatusActiveGreen.copy(alpha = 0.5f), RoundedCornerShape(16.dp))
+                            .clickable { onMarkArrived() }
+                            .padding(vertical = 12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "✓ Mark Arrived & Check In", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = StatusActiveGreen)
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
 
                 if (booking.status == "Upcoming") {
                     Box(

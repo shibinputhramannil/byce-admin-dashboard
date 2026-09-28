@@ -29,135 +29,193 @@ fun OwnerReportsScreen(
     modifier: Modifier = Modifier
 ) {
     var selectedTimeframe by remember { mutableStateOf("Monthly") }
-    var selectedReportSection by remember { mutableStateOf("Revenue") } // Revenue, Memberships, Customers
+    var selectedReportSection by remember { mutableStateOf("Revenue") } // Revenue, Attendance, Memberships, Expiring, Customers
+    var showExportDialog by remember { mutableStateOf(false) }
+    var exportFormat by remember { mutableStateOf("CSV") }
 
     val scrollState = rememberScrollState()
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(scrollState)
-            .padding(horizontal = 20.dp, vertical = 16.dp)
-    ) {
-        Text(
-            text = "ANALYTICS & INSIGHTS",
-            fontSize = 11.sp,
-            fontWeight = FontWeight.ExtraBold,
-            color = TextSubtle,
-            letterSpacing = 1.sp
-        )
-        Text(
-            text = "Gym Performance Reports",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextWhite
-        )
-
-        Spacer(modifier = Modifier.height(14.dp))
-
-        // Timeframe selector (Daily, Weekly, Monthly, Yearly)
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(6.dp)
+    Box(modifier = modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
-            listOf("Daily", "Weekly", "Monthly", "Yearly").forEach { tf ->
-                val isSelected = selectedTimeframe == tf
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(if (isSelected) Color(0x35FFFFFF) else Color(0x15FFFFFF))
-                        .border(1.dp, if (isSelected) GlassBorderSpecular else Color.Transparent, RoundedCornerShape(12.dp))
-                        .clickable { selectedTimeframe = tf }
-                        .padding(vertical = 8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
                     Text(
-                        text = tf,
+                        text = "ANALYTICS & INSIGHTS",
                         fontSize = 11.sp,
-                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                        color = if (isSelected) TextWhite else TextMuted
+                        fontWeight = FontWeight.ExtraBold,
+                        color = TextSubtle,
+                        letterSpacing = 1.sp
+                    )
+                    Text(
+                        text = "Gym Performance Reports",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextWhite
                     )
                 }
-            }
-        }
 
-        Spacer(modifier = Modifier.height(14.dp))
-
-        // Section Pills: Revenue | Memberships | Customers
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            listOf("Revenue", "Memberships", "Customers").forEach { sec ->
-                val isSelected = selectedReportSection == sec
+                // Export Button
                 Box(
                     modifier = Modifier
-                        .weight(1f)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(if (isSelected) Color(0x35FFFFFF) else Color(0x15FFFFFF))
-                        .border(1.dp, if (isSelected) GlassBorderSpecular else GlassBorderLight, RoundedCornerShape(14.dp))
-                        .clickable { selectedReportSection = sec }
-                        .padding(vertical = 10.dp),
+                        .background(Color(0x20FFFFFF))
+                        .border(1.dp, GlassBorderLight, RoundedCornerShape(14.dp))
+                        .clickable { showExportDialog = true }
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = sec,
-                        fontSize = 12.sp,
-                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                        color = if (isSelected) TextWhite else TextMuted
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.FileDownload, contentDescription = "Export", tint = TextWhite, modifier = Modifier.size(15.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(text = "Export", fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = TextWhite)
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Timeframe selector (Daily, Weekly, Monthly, Yearly)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                listOf("Daily", "Weekly", "Monthly", "Yearly").forEach { tf ->
+                    val isSelected = selectedTimeframe == tf
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (isSelected) Color(0x35FFFFFF) else Color(0x15FFFFFF))
+                            .border(1.dp, if (isSelected) GlassBorderSpecular else Color.Transparent, RoundedCornerShape(12.dp))
+                            .clickable { selectedTimeframe = tf }
+                            .padding(vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = tf,
+                            fontSize = 11.sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            color = if (isSelected) TextWhite else TextMuted
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // Section Pills: Revenue | Attendance | Expiring | Memberships | Customers
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                listOf("Revenue", "Attendance", "Expiring", "Memberships").forEach { sec ->
+                    val isSelected = selectedReportSection == sec
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (isSelected) Color(0x35FFFFFF) else Color(0x15FFFFFF))
+                            .border(1.dp, if (isSelected) GlassBorderSpecular else GlassBorderLight, RoundedCornerShape(12.dp))
+                            .clickable { selectedReportSection = sec }
+                            .padding(vertical = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = sec,
+                            fontSize = 11.sp,
+                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                            color = if (isSelected) TextWhite else TextMuted
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            when (selectedReportSection) {
+                "Revenue" -> {
+                    AnalyticsChartCard(
+                        title = "Revenue Analytics ($selectedTimeframe)",
+                        totalValue = "₹4,82,500",
+                        growthText = "+15.4% growth",
+                        dataPoints = listOf(
+                            Pair("Week 1", 108.0),
+                            Pair("Week 2", 119.5),
+                            Pair("Week 3", 124.2),
+                            Pair("Week 4", 130.8)
+                        ),
+                        unit = "k"
+                    )
+                }
+                "Attendance" -> {
+                    AnalyticsChartCard(
+                        title = "Daily Check-in Volume ($selectedTimeframe)",
+                        totalValue = "86 Today",
+                        growthText = "+14.2% visit rate",
+                        dataPoints = listOf(
+                            Pair("Mon", 94.0),
+                            Pair("Tue", 108.0),
+                            Pair("Wed", 102.0),
+                            Pair("Thu", 86.0),
+                            Pair("Fri", 110.0),
+                            Pair("Sat", 72.0)
+                        ),
+                        unit = " visits"
+                    )
+                }
+                "Expiring" -> {
+                    AnalyticsChartCard(
+                        title = "Membership Expiry Forecast",
+                        totalValue = "38 Expiring Soon",
+                        growthText = "₹84.5k at risk",
+                        dataPoints = listOf(
+                            Pair("Next 7D", 7.0),
+                            Pair("Next 15D", 18.0),
+                            Pair("Next 30D", 38.0),
+                            Pair("Next 60D", 52.0)
+                        ),
+                        unit = " members"
+                    )
+                }
+                "Memberships" -> {
+                    AnalyticsChartCard(
+                        title = "Membership Retention & Growth",
+                        totalValue = "986 Active",
+                        growthText = "+8.2% new subscriptions",
+                        dataPoints = listOf(
+                            Pair("Basic", 340.0),
+                            Pair("Monthly", 420.0),
+                            Pair("Quarterly", 140.0),
+                            Pair("Yearly", 86.0)
+                        ),
+                        unit = " members"
+                    )
+                }
+                else -> {
+                    AnalyticsChartCard(
+                        title = "Customer Acquisition",
+                        totalValue = "1,248 Total",
+                        growthText = "+12% total registered",
+                        dataPoints = listOf(
+                            Pair("May", 950.0),
+                            Pair("Jun", 1040.0),
+                            Pair("Jul", 1120.0),
+                            Pair("Aug", 1180.0),
+                            Pair("Sep", 1248.0)
+                        ),
+                        unit = " users"
                     )
                 }
             }
-        }
-
-        Spacer(modifier = Modifier.height(18.dp))
-
-        when (selectedReportSection) {
-            "Revenue" -> {
-                AnalyticsChartCard(
-                    title = "Revenue Analytics ($selectedTimeframe)",
-                    totalValue = "₹4,82,500",
-                    growthText = "+15.4% growth",
-                    dataPoints = listOf(
-                        Pair("Week 1", 108.0),
-                        Pair("Week 2", 119.5),
-                        Pair("Week 3", 124.2),
-                        Pair("Week 4", 130.8)
-                    ),
-                    unit = "k"
-                )
-            }
-            "Memberships" -> {
-                AnalyticsChartCard(
-                    title = "Membership Retention & Growth",
-                    totalValue = "986 Active",
-                    growthText = "+8.2% new subscriptions",
-                    dataPoints = listOf(
-                        Pair("Basic", 340.0),
-                        Pair("Monthly", 420.0),
-                        Pair("Quarterly", 140.0),
-                        Pair("Yearly", 86.0)
-                    ),
-                    unit = " members"
-                )
-            }
-            "Customers" -> {
-                AnalyticsChartCard(
-                    title = "Customer Acquisition",
-                    totalValue = "1,248 Total",
-                    growthText = "+12% total registered",
-                    dataPoints = listOf(
-                        Pair("May", 950.0),
-                        Pair("Jun", 1040.0),
-                        Pair("Jul", 1120.0),
-                        Pair("Aug", 1180.0),
-                        Pair("Sep", 1248.0)
-                    ),
-                    unit = " users"
-                )
-            }
-        }
 
         Spacer(modifier = Modifier.height(18.dp))
 
@@ -187,6 +245,16 @@ fun OwnerReportsScreen(
         }
 
         Spacer(modifier = Modifier.height(40.dp))
+        }
+
+        if (showExportDialog) {
+            ExportModalDialog(
+                moduleName = "Analytics & Reports",
+                selectedFormat = exportFormat,
+                onFormatChange = { exportFormat = it },
+                onDismiss = { showExportDialog = false }
+            )
+        }
     }
 }
 
