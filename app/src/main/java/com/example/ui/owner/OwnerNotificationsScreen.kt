@@ -4,9 +4,11 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -91,19 +93,20 @@ fun OwnerNotificationsScreen(
 
             // Type Filter Pills
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                listOf("All", "Payment", "Membership", "Booking", "System").forEach { type ->
+                listOf("All", "Reminder", "Payment", "Membership", "Booking", "System").forEach { type ->
                     val isSelected = selectedTypeFilter == type
                     Box(
                         modifier = Modifier
-                            .weight(1f)
                             .clip(RoundedCornerShape(12.dp))
                             .background(if (isSelected) Color(0x35FFFFFF) else Color(0x15FFFFFF))
                             .border(1.dp, if (isSelected) GlassBorderSpecular else Color.Transparent, RoundedCornerShape(12.dp))
                             .clickable { selectedTypeFilter = type }
-                            .padding(vertical = 8.dp),
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -153,6 +156,7 @@ private fun NotificationRowCard(
     onMarkRead: () -> Unit
 ) {
     val icon = when (item.type) {
+        "Reminder" -> Icons.Default.Email
         "Payment" -> Icons.Default.CurrencyRupee
         "Membership" -> Icons.Default.CardMembership
         "Booking" -> Icons.Default.EventAvailable

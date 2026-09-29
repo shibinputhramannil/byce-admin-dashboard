@@ -878,7 +878,7 @@ fun OwnerDashboardScreen(
                             color = TextWhite
                         )
                         Text(
-                            text = "${booking.date} · ${booking.time}",
+                            text = "${booking.shift} · ${booking.date} · ${booking.time}",
                             fontSize = 11.sp,
                             color = ByceCoolGray
                         )

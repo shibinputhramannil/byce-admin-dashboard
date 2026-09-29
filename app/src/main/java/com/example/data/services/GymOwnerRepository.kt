@@ -120,12 +120,102 @@ object GymOwnerRepository {
     )
 
     private val sampleBookings = mutableListOf(
-        BookingItem("b1", "Rahul Menon", "+91 98471 22334", "Yearly Plan", "Today", "06:00 PM - 07:30 PM", "Upcoming", arrivalStatus = "Confirmed"),
-        BookingItem("b2", "Ananya Nair", "+91 97455 33445", "Monthly Plan", "Today", "07:00 PM - 08:30 PM", "Upcoming", arrivalStatus = "Confirmed"),
-        BookingItem("b3", "Mohammed Faizal", "+91 99951 44556", "Half Yearly", "Today", "08:00 AM - 09:30 AM", "Completed", arrivalStatus = "Checked In"),
-        BookingItem("b4", "Deepak Varma", "+91 94471 55667", "Quarterly Plan", "Today", "09:30 AM - 11:00 AM", "Completed", arrivalStatus = "Checked In"),
-        BookingItem("b5", "Sneha Joseph", "+91 96331 66778", "Monthly Plan", "Tomorrow", "06:30 AM - 08:00 AM", "Upcoming", arrivalStatus = "Confirmed"),
-        BookingItem("b6", "Gautham Das", "+91 98950 11447", "Day Pass", "Today", "04:00 PM - 05:30 PM", "Cancelled", arrivalStatus = "Not Arrived")
+        BookingItem(
+            id = "b1",
+            customerName = "Rahul Menon",
+            customerPhone = "+91 98471 22334",
+            customerEmail = "rahul.menon92@gmail.com",
+            membershipPlan = "Yearly Plan",
+            date = "Today",
+            time = "06:00 PM - 07:30 PM",
+            shift = "Evening Shift",
+            status = "Upcoming",
+            arrivalStatus = "Confirmed",
+            reminderMinutesBefore = 30,
+            reminderScheduled = true,
+            reminderDeliveryChannel = "Gmail",
+            reminderStatus = "Scheduled (Triggers at 05:30 PM via Gmail)"
+        ),
+        BookingItem(
+            id = "b2",
+            customerName = "Ananya Nair",
+            customerPhone = "+91 97455 33445",
+            customerEmail = "ananya.nair@gmail.com",
+            membershipPlan = "Monthly Plan",
+            date = "Today",
+            time = "08:00 PM - 09:30 PM",
+            shift = "Night Shift",
+            status = "Upcoming",
+            arrivalStatus = "Confirmed",
+            reminderMinutesBefore = 30,
+            reminderScheduled = true,
+            reminderDeliveryChannel = "Gmail",
+            reminderStatus = "Scheduled (Triggers at 07:30 PM via Gmail)"
+        ),
+        BookingItem(
+            id = "b3",
+            customerName = "Mohammed Faizal",
+            customerPhone = "+91 99951 44556",
+            customerEmail = "faizal.mohd@gmail.com",
+            membershipPlan = "Half Yearly",
+            date = "Today",
+            time = "06:00 AM - 07:30 AM",
+            shift = "Morning Shift",
+            status = "Completed",
+            arrivalStatus = "Checked In",
+            reminderMinutesBefore = 30,
+            reminderScheduled = true,
+            reminderDeliveryChannel = "Gmail",
+            reminderStatus = "Sent via Gmail at 05:30 AM"
+        ),
+        BookingItem(
+            id = "b4",
+            customerName = "Deepak Varma",
+            customerPhone = "+91 94471 55667",
+            customerEmail = "deepak.varma@gmail.com",
+            membershipPlan = "Quarterly Plan",
+            date = "Today",
+            time = "08:00 AM - 09:30 AM",
+            shift = "Morning Shift",
+            status = "Completed",
+            arrivalStatus = "Checked In",
+            reminderMinutesBefore = 30,
+            reminderScheduled = true,
+            reminderDeliveryChannel = "Gmail",
+            reminderStatus = "Sent via Gmail at 07:30 AM"
+        ),
+        BookingItem(
+            id = "b5",
+            customerName = "Sneha Joseph",
+            customerPhone = "+91 96331 66778",
+            customerEmail = "sneha.joseph@gmail.com",
+            membershipPlan = "Monthly Plan",
+            date = "Tomorrow",
+            time = "06:30 AM - 08:00 AM",
+            shift = "Morning Shift",
+            status = "Upcoming",
+            arrivalStatus = "Confirmed",
+            reminderMinutesBefore = 30,
+            reminderScheduled = true,
+            reminderDeliveryChannel = "Gmail",
+            reminderStatus = "Scheduled (Triggers at 06:00 AM via Gmail)"
+        ),
+        BookingItem(
+            id = "b6",
+            customerName = "Gautham Das",
+            customerPhone = "+91 98950 11447",
+            customerEmail = "gautham.das@gmail.com",
+            membershipPlan = "Day Pass",
+            date = "Today",
+            time = "08:30 PM - 10:00 PM",
+            shift = "Night Shift",
+            status = "Cancelled",
+            arrivalStatus = "Not Arrived",
+            reminderMinutesBefore = 30,
+            reminderScheduled = false,
+            reminderDeliveryChannel = "Gmail",
+            reminderStatus = "Cancelled"
+        )
     )
 
     private val sampleStaff = mutableListOf(
@@ -257,6 +347,68 @@ object GymOwnerRepository {
             )
             logAdminAction(adminName, "Marked ${booking.customerName} as arrived / checked in for slot ${booking.time}", "Bookings")
         }
+    }
+
+    // Shift & 30-Minute Gmail Reminder Engine
+    fun getShiftReminderSchedules(): List<ShiftReminderSchedule> {
+        val morningCount = sampleBookings.count { it.shift.contains("Morning", ignoreCase = true) && it.status != "Cancelled" }
+        val eveningCount = sampleBookings.count { it.shift.contains("Evening", ignoreCase = true) && it.status != "Cancelled" }
+        val nightCount = sampleBookings.count { it.shift.contains("Night", ignoreCase = true) && it.status != "Cancelled" }
+
+        return listOf(
+            ShiftReminderSchedule("Morning Shift", "06:00 AM", "10:30 AM", "05:30 AM (30m before start)", morningCount, "Gmail"),
+            ShiftReminderSchedule("Evening Shift", "04:00 PM", "07:30 PM", "03:30 PM (30m before start)", eveningCount, "Gmail"),
+            ShiftReminderSchedule("Night Shift", "08:00 PM", "10:30 PM", "07:30 PM (30m before start)", nightCount, "Gmail")
+        )
+    }
+
+    fun sendBookingGmailReminder(bookingId: String): Boolean {
+        val index = sampleBookings.indexOfFirst { it.id == bookingId }
+        if (index != -1) {
+            val b = sampleBookings[index]
+            sampleBookings[index] = b.copy(
+                reminderScheduled = true,
+                reminderStatus = "Sent via Gmail (30m pre-shift alert delivered)"
+            )
+            logAdminAction(
+                "Kishore Kumar",
+                "Dispatched 30m pre-shift Gmail reminder to ${b.customerName} (${b.customerEmail}) for ${b.shift} slot ${b.time}",
+                "Bookings"
+            )
+            addNotification(
+                NotificationItem(
+                    id = "notif_${System.currentTimeMillis()}",
+                    title = "Gmail Shift Reminder Sent",
+                    message = "30-min reminder delivered to ${b.customerName} (${b.customerEmail}) for ${b.shift} (${b.time}) via Gmail.",
+                    type = "Reminder",
+                    timestamp = "Just now",
+                    isRead = false
+                )
+            )
+            return true
+        }
+        return false
+    }
+
+    fun updateBookingReminderSchedule(bookingId: String, minutesBefore: Int, shift: String) {
+        val index = sampleBookings.indexOfFirst { it.id == bookingId }
+        if (index != -1) {
+            val b = sampleBookings[index]
+            sampleBookings[index] = b.copy(
+                shift = shift,
+                reminderMinutesBefore = minutesBefore,
+                reminderStatus = "Scheduled (${minutesBefore}m before $shift via Gmail)"
+            )
+            logAdminAction(
+                "Kishore Kumar",
+                "Updated reminder schedule for ${b.customerName}: $minutesBefore mins before $shift via Gmail",
+                "Bookings"
+            )
+        }
+    }
+
+    fun addNotification(item: NotificationItem) {
+        sampleNotifications.add(0, item)
     }
 
     // Staff

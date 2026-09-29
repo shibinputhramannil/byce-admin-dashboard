@@ -41,6 +41,7 @@ fun OwnerSettingsScreen(
     var showPasswordDialog by remember { mutableStateOf(false) }
     var notificationsEnabled by remember { mutableStateOf(true) }
     var emailAlertsEnabled by remember { mutableStateOf(true) }
+    var shiftGmailRemindersEnabled by remember { mutableStateOf(true) }
     var autoApproveCheckin by remember { mutableStateOf(true) }
 
     val scrollState = rememberScrollState()
@@ -286,6 +287,10 @@ fun OwnerSettingsScreen(
                         Spacer(modifier = Modifier.height(10.dp))
                         TogglePreferenceRow("Email Financial Receipts", "Receive daily revenue settlements", emailAlertsEnabled) {
                             emailAlertsEnabled = !emailAlertsEnabled
+                        }
+                        Spacer(modifier = Modifier.height(10.dp))
+                        TogglePreferenceRow("30-Minute Shift Reminders (Gmail)", "Notify members via Gmail 30 mins before Morning, Evening & Night shifts", shiftGmailRemindersEnabled) {
+                            shiftGmailRemindersEnabled = !shiftGmailRemindersEnabled
                         }
                     }
                 }

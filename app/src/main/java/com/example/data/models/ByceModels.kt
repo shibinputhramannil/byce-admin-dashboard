@@ -144,17 +144,35 @@ data class PaymentItem(
 )
 
 /**
- * Booking Record
+ * Booking Record with Shift & 30-Minute Gmail Reminder Support
  */
 data class BookingItem(
     val id: String,
     val customerName: String,
     val customerPhone: String = "",
+    val customerEmail: String = "member@gmail.com",
     val membershipPlan: String,
     val date: String,
     val time: String,
+    val shift: String = "Morning Shift", // "Morning Shift", "Evening Shift", "Night Shift"
     val status: String, // Upcoming, Today, Completed, Cancelled
-    val arrivalStatus: String = "Checked In" // Feature 10: Checked In, Not Arrived, Pending
+    val arrivalStatus: String = "Checked In", // Feature 10: Checked In, Not Arrived, Pending
+    val reminderMinutesBefore: Int = 30, // 30 minutes before gym start
+    val reminderScheduled: Boolean = true,
+    val reminderDeliveryChannel: String = "Gmail",
+    val reminderStatus: String = "Scheduled (30m before shift)" // Scheduled, Sent via Gmail, Delivered, Cancelled
+)
+
+/**
+ * Shift Schedule with 30-Minute Reminder Configuration
+ */
+data class ShiftReminderSchedule(
+    val shiftName: String, // Morning Shift, Evening Shift, Night Shift
+    val startTime: String,
+    val endTime: String,
+    val reminderTriggerTime: String, // 30 minutes prior to gym start
+    val activeBookingsCount: Int,
+    val channel: String = "Gmail"
 )
 
 /**
